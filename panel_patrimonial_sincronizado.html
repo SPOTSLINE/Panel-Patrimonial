@@ -60,6 +60,30 @@ table.grid thead th.rubro-hd{text-align:left;position:sticky;left:0;z-index:3;ba
 table.grid td.rubro-cell{position:sticky;left:0;background:var(--bg2);z-index:1;text-align:left;min-width:190px;max-width:220px;white-space:normal}
 table.grid tr.section-hd td{padding:10px 10px 4px;font-family:var(--mono);font-size:10.5px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;border-bottom:none;background:var(--bg2)}
 table.grid tr.total-row td{font-weight:700;background:var(--bg3)}
+/* globo ⓘ "¿Qué es y cómo se analiza?" (mismo estilo que el panel de Cobranzas) */
+.calc-tip{position:fixed;z-index:400;background:#151515;border:1px solid #4a3d00;border-left:3px solid var(--yellow);border-radius:10px;padding:10px 14px;box-shadow:0 10px 30px rgba(0,0,0,.6);font-size:12.5px;color:var(--text2);line-height:1.5;white-space:normal;text-align:left;font-family:var(--sans)}
+.calc-tip[hidden]{display:none}
+.calc-tip p{margin:4px 0}.calc-tip b,.calc-tip strong{color:var(--text)}
+.calc-tip-h{font-size:11px;font-weight:700;color:var(--yellow);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.calc-tip .ct-s{font-size:10.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:8px}
+.calc-row{display:flex;justify-content:space-between;gap:12px;padding:3px 0;border-bottom:1px dashed #333;font-family:var(--mono);font-size:12px}
+.calc-row span:last-child{color:var(--text);font-weight:600;white-space:nowrap}
+.calc-row.calc-tot{border-bottom:0;border-top:1px solid var(--border2);margin-top:2px;padding-top:5px}
+.calc-row.calc-tot span{color:var(--yellow2);font-weight:800}
+.calc-nota{font-size:11.5px;color:var(--text3)}
+.calc-ic{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;border:1px solid var(--text3);color:var(--text3);font-size:9.5px;font-weight:700;font-style:normal;font-family:Georgia,serif;cursor:help;flex-shrink:0;line-height:1}
+[data-calc]:hover .calc-ic,.calc-ic:focus-visible{color:var(--yellow);border-color:var(--yellow);outline:none}
+td.numcell[data-calc]{cursor:help}
+@media print{.calc-ic,.calc-tip{display:none!important}}
+/* plegar secciones y filtro Corriente / No corriente (misma lógica que el Estado de resultados) */
+table.grid tr.section-hd.plegable td{cursor:pointer;user-select:none}
+table.grid tr.section-hd.plegable td:hover{color:var(--yellow)}
+table.grid tr.section-hd.plegable td::before{content:"▾";display:inline-block;width:14px;color:var(--yellow);transition:transform .15s}
+table.grid tr.section-hd.plegable.cerrado td::before{transform:rotate(-90deg)}
+table.grid tr.section-hd .plg-n{text-transform:none;letter-spacing:0;color:var(--text3);margin-left:6px;font-size:10.5px}
+.cte-filter .entity-btn.active{background:var(--yellow-dim);color:var(--yellow)}
+.vista-note{font-size:12px;color:var(--text2);background:var(--yellow-dim);border:1px solid #4a3d00;border-radius:8px;padding:8px 12px;margin-bottom:12px}
+.vista-note button{background:none;border:none;color:var(--yellow);text-decoration:underline;cursor:pointer;font:inherit;padding:0}
 table.grid tr.total-row.grand td{background:var(--bg4);font-size:13px}
 table.grid tr.ratio-row td{color:var(--yellow)}
 table.grid td.numcell.frozen-cell{background:rgba(245,196,0,.06)}
@@ -260,6 +284,21 @@ tr.rate-row .rubro-cell{font-style:italic;color:var(--text2);font-size:12px}
 #printView .pv-note{margin-top:7px;padding:7px 10px;background:#fff8d9;border-left:4px solid #f5c400;font-size:11.5px}
 #printView .pv-none{color:#8a8a8a}
 
+/* ============ ARCHIVOS CARGADOS ============ */
+.arch-wrap{overflow-x:auto}
+.modal .arch-table{width:100%;border-collapse:collapse;margin-top:6px;font-size:12px}
+.modal .arch-table th{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--text3);font-weight:600}
+.modal .arch-table td.arch-name{white-space:normal;word-break:break-word;max-width:300px}
+.modal .arch-actions{white-space:nowrap;text-align:right}
+.modal .arch-actions .ped-mini{margin-left:4px}
+.arch-sub{font-size:11px;color:var(--text3);font-weight:400;margin-top:2px}
+.arch-meta{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;font-size:12px;color:var(--text2);margin-bottom:10px}
+.arch-h4{font-size:12px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--yellow);margin:14px 0 2px}
+.arch-gridwrap{max-height:420px;overflow:auto;border:1px solid var(--border);border-radius:8px;margin-top:8px}
+.modal table.arch-grid{border-collapse:collapse;font-size:11px;margin-top:0}
+.modal table.arch-grid td{padding:2px 8px;border:1px solid var(--border);white-space:nowrap}
+.modal table.arch-grid td.rn{color:var(--text3);background:var(--bg3);position:sticky;left:0;text-align:right}
+
 </style>
 </head>
 <body>
@@ -267,12 +306,15 @@ tr.rate-row .rubro-cell{font-style:italic;color:var(--text2);font-size:12px}
 <div class="header">
   <div class="eyebrow"><span class="pulse"></span> SPL / SPOTSLINE · SISTEMAS DE GESTIÓN</div>
   <h1>Situación Patrimonial</h1>
-  <div class="sub">Activo, Pasivo y ratios, mes a mes y por empresa. <span id="sync-status" style="opacity:.8"></span></div>
+  <div class="sub">Activo, Pasivo y ratios, mes a mes y por empresa. <span id="sync-status" style="opacity:.8"></span> <span id="userBadge" style="opacity:.8"></span></div>
 </div>
 
 <div class="main">
   <div class="controls no-print">
-    <div class="entity-filter" id="entityFilter"></div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <div class="entity-filter" id="entityFilter"></div>
+      <div class="entity-filter cte-filter" id="cteFilter" role="group" aria-label="Filtrar Corriente / No corriente"></div>
+    </div>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
       <div class="year-nav" id="yearNav"></div>
       <button class="btn" id="btnImportCF"><i class="ti ti-upload"></i> Importar Cash Flow</button>
@@ -282,6 +324,8 @@ tr.rate-row .rubro-cell{font-style:italic;color:var(--text2);font-size:12px}
       <button class="btn" id="btnExportPdf"><i class="ti ti-file-type-pdf"></i> PDF</button>
       <button class="btn" id="btnExport"><i class="ti ti-download"></i> Backup (JSON)</button>
       <button class="btn" id="btnImportBackup"><i class="ti ti-upload"></i> Restaurar backup</button>
+      <button class="btn" id="btnArchivos"><i class="ti ti-files"></i> Archivos cargados <span id="archivosCount" style="color:var(--yellow)"></span></button>
+      <button class="btn" id="btnRegistro"><i class="ti ti-history"></i> Registro de cambios</button>
       <button class="btn" id="btnPedidos"><i class="ti ti-bulb"></i> Pedidos de mejora <span id="pedidosCount" style="color:var(--yellow)"></span></button>
       <button class="btn" id="btnMeta"><i class="ti ti-info-circle"></i> Cómo se genera</button>
     </div>
@@ -456,6 +500,13 @@ function seedBadgeFor(fieldId, year){
 /* ============ STATE ============ */
 let state = { entity:'spl', year:2026 };
 let commentsExpanded = false;
+// Vista Corriente / No corriente y secciones plegadas: preferencia de cada usuario en su navegador.
+const VISTAS_CTE = [{id:'todo',label:'Todo'},{id:'cte',label:'Corriente'},{id:'nocte',label:'No corriente'}];
+function lsGet(k,def){ try{ const v = localStorage.getItem(k); return v===null ? def : JSON.parse(v); }catch(e){ return def; } }
+function lsSet(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+state.vistaCte = lsGet('sitpat_vista_cte','todo');
+if(!VISTAS_CTE.some(v=>v.id===state.vistaCte)) state.vistaCte = 'todo';
+const seccionesCerradas = new Set(lsGet('sitpat_secciones_cerradas',[]));
 let cache = {}; // key -> {values:{}, meta:{}}
 
 function periodKey(entity, year, month){ return `sitpat:${entity}:${year}:${month}`; }
@@ -549,6 +600,107 @@ const Store = {
   }
 };
 
+/* ============ USUARIO Y PERMISOS (vienen del Panel de Paneles vía candado.js) ============
+   window.PORTAL_ACCESO → {user_id, email, nombre, es_admin, config}. config se arma en la portada,
+   Usuarios → "Permisos dentro de Situación Patrimonial": {empresas:[...], acciones:{editar, importar, ...}}.
+   Administrador general = todo. Sin config todavía = solo ver, exportar y ver el registro.
+   Si el archivo se abre suelto (sin candado) queda todo habilitado, como antes. */
+const PERM_PAT = ['editar','importar','congelar','comentarios','exportar','backup','registro'];
+let USUARIO = {id:null, nombre:'Sin login (archivo local)', email:'', es_admin:true, local:true};
+let PERM = {empresas:['spl','spotsline'], editar:true, importar:true, congelar:true, comentarios:true, exportar:true, backup:true, registro:true};
+async function cargarAcceso(){
+  if(!window.PORTAL_ACCESO || typeof window.PORTAL_ACCESO.then !== 'function') return;
+  let a = null;
+  try{ a = await window.PORTAL_ACCESO; }catch(e){ return; }
+  if(!a) return;
+  USUARIO = {id:a.user_id||null, nombre:a.nombre||a.email||(a.planta?'Planta':'Usuario'), email:a.email||'', es_admin:!!a.es_admin, local:false};
+  if(a.es_admin) return;
+  const c = a.config || {}, acc = c.acciones || {};
+  const emps = (Array.isArray(c.empresas) ? c.empresas : []).filter(e=>e==='spl'||e==='spotsline');
+  PERM = {empresas: emps.length ? emps : ['spl','spotsline']};
+  PERM_PAT.forEach(k=>{ PERM[k] = (k==='exportar'||k==='registro') ? acc[k]!==false : acc[k]===true; });
+}
+function entidadesVisibles(){
+  return ENTITIES.filter(e=> e.id==='conjunto' ? PERM.empresas.length===2 : PERM.empresas.includes(e.id));
+}
+function aplicarPermisosUI(){
+  const ver = (id, ok)=>{ const el = document.getElementById(id); if(el) el.hidden = !ok; };
+  ver('btnImportCF', PERM.importar); ver('btnSyncPanels', PERM.importar); ver('btnSyncDolar', PERM.importar);
+  ver('btnExportExcel', PERM.exportar); ver('btnExportPdf', PERM.exportar);
+  ver('btnExport', PERM.backup); ver('btnImportBackup', PERM.backup);
+  ver('btnRegistro', PERM.registro);
+  const ub = document.getElementById('userBadge');
+  if(ub && !USUARIO.local){
+    const nada = !PERM.editar && !PERM.importar && !PERM.congelar && !PERM.comentarios;
+    ub.textContent = '· ' + USUARIO.nombre + (USUARIO.es_admin ? ' (administrador)' : (nada ? ' (solo lectura)' : ''));
+  }
+  if(!entidadesVisibles().some(e=>e.id===state.entity)) state.entity = entidadesVisibles()[0].id;
+}
+function sinPermiso(accion){ alert('Tu usuario no tiene permiso para '+accion+'. Pedíselo a un administrador desde Usuarios en el Panel de Paneles.'); }
+
+/* ---- Registro de cambios: cada guardado deja quién, cuándo, qué rubro, valor anterior y nuevo.
+   Se guarda como filas sueltas en la misma tabla (id "cambio_<fecha>_<azar>"), así no engorda la fila de datos
+   ni se pisan dos usuarios que guardan a la vez. ---- */
+const REG_PREFIX = 'cambio_';
+const persistido = {}; // último estado guardado/leído de cada período (para comparar antes/después)
+let regCola = [], regTimer = null;
+function etiquetaCampo(fid){
+  if(fid==='tipo_cambio') return 'Tipo de Cambio';
+  if(fid==='__frozen') return 'Mes congelado';
+  if(fid==='__comentario') return 'Notas del mes';
+  return (typeof fieldName==='function') ? fieldName(fid) : fid;
+}
+function numOrNull(v){ return (v===undefined||v===null||v==='') ? null : Number(v); }
+function diffPeriodo(antes, despues){
+  const out = [];
+  const a = (antes&&antes.values)||{}, d = (despues&&despues.values)||{};
+  new Set([...Object.keys(a), ...Object.keys(d)]).forEach(f=>{
+    const va = numOrNull(a[f]), vd = numOrNull(d[f]);
+    if(va===vd || (va!==null && vd!==null && Math.abs(va-vd)<0.005)) return;
+    const meta = (despues.meta||{})[f] || {};
+    const origen = meta.source==='archivo' ? ('Archivo: '+(meta.filename||'')) : meta.source==='panel' ? 'Sincronizar Paneles' : 'Manual';
+    out.push({c:f, a:va, d:vd, o:origen});
+  });
+  if(!!(antes&&antes.frozen) !== !!despues.frozen) out.push({c:'__frozen', a:antes&&antes.frozen?'Sí':'No', d:despues.frozen?'Sí':'No', o:despues.frozen?'Congeló':'Descongeló'});
+  const ca = (antes&&antes.comentario)||'', cd = despues.comentario||'';
+  if(ca !== cd) out.push({c:'__comentario', a:ca.slice(0,300), d:cd.slice(0,300), o:'Manual'});
+  return out;
+}
+function anotarCambios(entity, year, month, cambios, origenForzado){
+  if(!cambios.length) return;
+  const en = new Date().toISOString();
+  regCola.push({id: REG_PREFIX + Date.now() + '_' + Math.random().toString(36).slice(2,8),
+    valor:{en, por:USUARIO.nombre, email:USUARIO.email, uid:USUARIO.id, e:entity, y:year, m:month,
+      cambios: cambios.map(x=> origenForzado ? Object.assign({}, x, {o:origenForzado}) : x)}, updated_at: en});
+  clearTimeout(regTimer); regTimer = setTimeout(enviarRegistro, 1200);
+}
+async function enviarRegistro(){
+  if(!regCola.length) return;
+  const lote = regCola.splice(0, regCola.length);
+  try{
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}`, {
+      method:'POST',
+      headers:{ apikey:SUPABASE_KEY, Authorization:'Bearer '+SUPABASE_KEY, 'Content-Type':'application/json', Prefer:'return=minimal' },
+      body: JSON.stringify(lote)
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status+' '+(await res.text().catch(()=> '')));
+  }catch(e){
+    console.error('No se pudo guardar el registro de cambios', e);
+    regCola = lote.concat(regCola); // se reintenta con el próximo cambio
+  }
+}
+window.addEventListener('pagehide', ()=>{ if(regCola.length) enviarRegistro(); });
+async function leerRegistro(limite){
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}?id=like.${REG_PREFIX}*&select=id,valor&order=id.desc&limit=${limite||1000}`, {
+    headers:{ apikey:SUPABASE_KEY, Authorization:'Bearer '+SUPABASE_KEY }
+  });
+  if(!res.ok) throw new Error('HTTP '+res.status);
+  const rows = await res.json();
+  const out = [];
+  (rows||[]).forEach(r=>{ const v = r.valor||{}; (v.cambios||[]).forEach(c=> out.push({en:v.en, por:v.por||'', e:v.e, y:v.y, m:v.m, c:c.c, a:c.a, d:c.d, o:c.o||''})); });
+  return out;
+}
+
 async function loadPeriod(entity, year, month){
   const k = periodKey(entity, year, month);
   if(cache[k]) return cache[k];
@@ -560,14 +712,18 @@ async function loadPeriod(entity, year, month){
   }
   if(cache[k].frozen === undefined) cache[k].frozen = false;
   if(cache[k].comentario === undefined) cache[k].comentario = '';
+  persistido[k] = JSON.stringify(cache[k]);
   return cache[k];
 }
 
 async function savePeriod(entity, year, month, data){
   const k = periodKey(entity, year, month);
+  let antes = null; try{ antes = persistido[k] ? JSON.parse(persistido[k]) : null; }catch(e){}
   cache[k] = data;
   try{ await Store.set(k, JSON.stringify(data)); }
   catch(e){ console.error('No se pudo guardar', e); }
+  persistido[k] = JSON.stringify(data);
+  try{ anotarCambios(entity, year, month, diffPeriodo(antes, data)); }catch(e){ console.warn('Registro de cambios', e); }
 }
 
 function fmtMoney(n){
@@ -596,11 +752,20 @@ function sum(vals, ids){ return ids.reduce((a,id)=>a+(Number(vals[id])||0),0); }
 
 /* ============ RENDER: filters ============ */
 function renderEntityFilter(){
-  document.getElementById('entityFilter').innerHTML = ENTITIES.map(e=>
+  document.getElementById('entityFilter').innerHTML = entidadesVisibles().map(e=>
     `<button class="entity-btn ${e.id===state.entity?'active':''}" data-e="${e.id}">${e.label}</button>`
   ).join('');
   document.querySelectorAll('.entity-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{ state.entity = btn.dataset.e; renderAll(); });
+  });
+}
+function renderCteFilter(){
+  const box = document.getElementById('cteFilter');
+  box.innerHTML = VISTAS_CTE.map(v=>
+    `<button class="entity-btn ${v.id===state.vistaCte?'active':''}" data-vcte="${v.id}" aria-pressed="${v.id===state.vistaCte}">${v.label}</button>`
+  ).join('');
+  box.querySelectorAll('button[data-vcte]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ state.vistaCte = btn.dataset.vcte; lsSet('sitpat_vista_cte', state.vistaCte); renderCteFilter(); renderGrid(); });
   });
 }
 function renderYearNav(){
@@ -784,13 +949,14 @@ function computeDiffSummary(currValues, prevValues, currTotals, prevTotals){
   return lines;
 }
 
-function rubroLabelCell(f, readonly, sourceTag){
+function rubroLabelCell(f, readonly, sourceTag, sinBadge){
   const showUpload = FILE_FIELDS.has(f.id) && !readonly;
-  return `<td class="rubro-cell">
+  const info = infoRubro(f);
+  return `<td class="rubro-cell"${info?` data-calc="${escAttr(info)}"`:''}>
     <div class="rubro-lbl-row">
       <div class="nm">
-        <span>${f.label}</span>
-        ${tagBadge(readonly?'':sourceTag)}
+        <span>${f.label}</span>${info?ICON_INFO:''}
+        ${tagBadge(sinBadge?'':sourceTag)}
       </div>
       ${showUpload?`<button class="mini-upload" data-upload="${f.id}" title="Subir archivo"><i class="ti ti-upload"></i></button>`:''}
     </div>
@@ -805,14 +971,15 @@ function defaultVisibleMonths(year){
 }
 
 async function renderGrid(monthsOverride){
-  const readonly = state.entity === 'conjunto';
+  const esConj = state.entity === 'conjunto';
+  const readonly = esConj || !PERM.editar; // sin permiso de edición: se ve igual pero sin casilleros
   const entLabel = ENTITIES.find(e=>e.id===state.entity).label;
   const visibleMonths = monthsOverride || defaultVisibleMonths(state.year);
 
   // load visible months for the year
   const monthData = {};
   for(const m of visibleMonths){
-    monthData[m] = readonly ? await effectiveMonthDataConjunto(state.year, m) : await effectiveMonthData(state.entity, state.year, m);
+    monthData[m] = esConj ? await effectiveMonthDataConjunto(state.year, m) : await effectiveMonthData(state.entity, state.year, m);
   }
   const totalsByMonth = {};
   visibleMonths.forEach(m=> totalsByMonth[m] = computeTotals(monthData[m].values));
@@ -820,27 +987,28 @@ async function renderGrid(monthsOverride){
   const firstM = visibleMonths[0];
 
   // Resumen automático: compara cada mes contra el anterior (aunque no esté visible) y arma los cambios relevantes.
-  const summaryTexts = await computeSummaryTexts(visibleMonths, monthData, totalsByMonth, readonly);
+  const summaryTexts = await computeSummaryTexts(visibleMonths, monthData, totalsByMonth, esConj);
 
   const headRow = `<tr><th class="rubro-hd"><span style="color:var(--yellow)">${entLabel}</span> · ${state.year}</th>${visibleMonths.map(m=>{
-    if(readonly) return `<th>${MESES[m].slice(0,3)}</th>`;
+    if(esConj) return `<th>${MESES[m].slice(0,3)}</th>`;
     const frozen = monthData[m].frozen;
+    if(!PERM.congelar) return `<th><div class="month-hd"><span>${MESES[m].slice(0,3)}</span>${frozen?'<span title="Mes congelado">🔒</span>':''}</div></th>`;
     return `<th><div class="month-hd"><span>${MESES[m].slice(0,3)}</span><button class="freeze-btn ${frozen?'is-frozen':''}" data-freeze-month="${m}" title="${frozen?'Mes congelado — click para descongelar':'Congelar este mes'}">${frozen?'🔒':'🔓'}</button></div></th>`;
   }).join('')}</tr>`;
 
   function fieldRow(f){
-    const sourceTag = readonly ? '' : (monthData[firstM].sources[f.id] || f.tag); // badge shown once per row, basado en el primer mes visible
+    const sourceTag = esConj ? '' : (monthData[firstM].sources[f.id] || f.tag); // badge shown once per row, basado en el primer mes visible
     let cells = '';
     for(const m of visibleMonths){
       const v = monthData[m].values[f.id];
       const src = monthData[m].sources ? monthData[m].sources[f.id] : '';
       const seeded = (src==='cashflow'||src==='fijo'||src==='convertido'||src==='referencia'||src==='historico');
       const warn = (src==='usd');
-      const frozen = !readonly && monthData[m].frozen;
+      const frozen = !esConj && monthData[m].frozen;
       const lockedCalc = (USD_FIELDS[f.id] && (src==='convertido'||src==='usd')); // se calcula solo, no se edita a mano
       const drillItems = (DRILL_FIELDS.has(f.id) && monthData[m].meta && monthData[m].meta[f.id] && monthData[m].meta[f.id].items);
       const drillBtn = drillItems ? `<button class="drill-btn" data-drill="${f.id}" data-month="${m}" title="Ver detalle">🔎</button>` : '';
-      const unlockBtn = (lockedCalc && !frozen) ? `<button class="unlock-btn" data-unlock="${f.id}" data-month="${m}" title="Editar manualmente (deja de calcularse con USD × TC)">✎</button>` : '';
+      const unlockBtn = (lockedCalc && !frozen && !readonly) ? `<button class="unlock-btn" data-unlock="${f.id}" data-month="${m}" title="Editar manualmente (deja de calcularse con USD × TC)">✎</button>` : '';
       const isOverride = (USD_FIELDS[f.id] && src==='manual' && !frozen);
       const relockBtn = isOverride ? `<button class="unlock-btn" data-relock="${f.id}" data-month="${m}" title="Volver a calcular con USD × Tipo de Cambio">↺</button>` : '';
       if(readonly || lockedCalc || frozen){
@@ -851,32 +1019,49 @@ async function renderGrid(monthsOverride){
         cells += `<td class="numcell">${drillBtn}${relockBtn}<input class="val-input ${seeded?'seeded':''} ${warn?'warn':''}" type="text" inputmode="decimal" data-field="${f.id}" data-month="${m}" value="${fmtInput(v)}" placeholder="0" title="${warn?'Sin cotización para convertir a pesos':''}"></td>`;
       }
     }
-    return `<tr class="rubro-row">${rubroLabelCell(f, readonly, sourceTag)}${cells}</tr>`;
+    return `<tr class="rubro-row">${rubroLabelCell(f, esConj || !PERM.importar, sourceTag, esConj)}${cells}</tr>`;
   }
 
-  function labelCell(label, formula){
-    return formula
-      ? `<td class="rubro-cell"><span title="${formula}" style="border-bottom:1px dotted var(--text3);cursor:help">${label}</span></td>`
+  function labelCell(label, formula, key){
+    const info = INFO_TOTAL[key] ? infoTotal(key, null) : (formula ? `<p>Fórmula: <b>${formula}</b></p>` : '');
+    return info
+      ? `<td class="rubro-cell" data-calc="${escAttr(info)}"><div class="rubro-lbl-row"><div class="nm"><span>${label}</span>${ICON_INFO}</div></div></td>`
       : `<td class="rubro-cell">${label}</td>`;
   }
+  // cada celda de total/ratio explica su cuenta con los números de ese mes
+  function calcAttr(key, m){
+    if(!INFO_TOTAL[key]) return '';
+    return ` data-calc="${escAttr(infoTotal(key, {mes:MESES[m]+' '+state.year, t:totalsByMonth[m], v:monthData[m].values}))}"`;
+  }
   function totalRow(label, key, grand, formula){
-    const cells = visibleMonths.map(m=>`<td class="numcell ${(!readonly&&monthData[m].frozen)?'frozen-cell':''}">${fmtMoney(totalsByMonth[m][key])}</td>`).join('');
-    return `<tr class="total-row ${grand?'grand':''}">${labelCell(label, formula)}${cells}</tr>`;
+    const cells = visibleMonths.map(m=>`<td class="numcell ${(!esConj&&monthData[m].frozen)?'frozen-cell':''}"${calcAttr(key,m)}>${fmtMoney(totalsByMonth[m][key])}</td>`).join('');
+    return `<tr class="total-row ${grand?'grand':''}">${labelCell(label, formula, key)}${cells}</tr>`;
   }
   function ratioRow(label, key, formula){
-    const cells = visibleMonths.map(m=>`<td class="numcell ${(!readonly&&monthData[m].frozen)?'frozen-cell':''}">${fmtRatio(totalsByMonth[m][key])}</td>`).join('');
-    return `<tr class="ratio-row">${labelCell(label, formula)}${cells}</tr>`;
+    const cells = visibleMonths.map(m=>`<td class="numcell ${(!esConj&&monthData[m].frozen)?'frozen-cell':''}"${calcAttr(key,m)}>${fmtRatio(totalsByMonth[m][key])}</td>`).join('');
+    return `<tr class="ratio-row">${labelCell(label, formula, key)}${cells}</tr>`;
   }
   function pctRow(label, key, formula){
     const cells = visibleMonths.map(m=>{
       const v = totalsByMonth[m][key];
       const txt = isFinite(v) ? (v*100).toFixed(1)+'%' : '—';
-      return `<td class="numcell ${(!readonly&&monthData[m].frozen)?'frozen-cell':''}">${txt}</td>`;
+      return `<td class="numcell ${(!esConj&&monthData[m].frozen)?'frozen-cell':''}"${calcAttr(key,m)}>${txt}</td>`;
     }).join('');
-    return `<tr class="ratio-row">${labelCell(label, formula)}${cells}</tr>`;
+    return `<tr class="ratio-row">${labelCell(label, formula, key)}${cells}</tr>`;
   }
-  function sectionHd(label){
-    return `<tr class="section-hd"><td colspan="${visibleMonths.length+1}">${label}</td></tr>`;
+  function sectionHd(label, key, nRubros){
+    if(!key) return `<tr class="section-hd"><td colspan="${visibleMonths.length+1}">${label}</td></tr>`;
+    const cer = seccionesCerradas.has(key);
+    const extra = cer ? `<span class="plg-n">(${nRubros} rubros plegados · tocá para ver)</span>` : '';
+    return `<tr class="section-hd plegable${cer?' cerrado':''}" data-seccion="${key}" tabindex="0" role="button" aria-expanded="${!cer}" title="${cer?'Mostrar':'Ocultar'} el detalle de ${label}"><td colspan="${visibleMonths.length+1}">${label}${extra}</td></tr>`;
+  }
+  // Una sección: encabezado plegable + rubros (si está abierta) + su total, que siempre queda visible.
+  function seccion(label, key, fields, totalLbl, totalKey, conTC){
+    const cer = seccionesCerradas.has(key);
+    return [sectionHd(label, key, fields.length + (conTC?1:0)),
+      ...(cer ? [] : fields.map(fieldRow)),
+      ...(cer || !conTC ? [] : [rateRow(conTC==='compact')]),
+      totalRow(totalLbl, totalKey)];
   }
 
   function rateRow(compact){
@@ -884,16 +1069,16 @@ async function renderGrid(monthsOverride){
     for(const m of visibleMonths){
       const v = monthData[m].values.tipo_cambio;
       const src = monthData[m].sources.tipo_cambio;
-      const frozen = !readonly && monthData[m].frozen;
+      const frozen = !esConj && monthData[m].frozen;
       if(readonly || frozen){
         cells += `<td class="numcell ${frozen?'frozen-cell':''}"><span title="${frozen?'Mes congelado':''}">${v?v.toLocaleString('es-AR'):'—'}</span></td>`;
       } else {
         cells += `<td class="numcell"><input class="val-input ${src==='referencia'?'seeded':''}" type="number" step="any" data-field="tipo_cambio" data-month="${m}" value="${v||''}" placeholder="0"></td>`;
       }
     }
-    const badge = readonly ? '' : tagBadge(monthData[firstM].sources.tipo_cambio || 'referencia');
+    const badge = esConj ? '' : tagBadge(monthData[firstM].sources.tipo_cambio || 'referencia');
     const label = compact ? 'Tipo de Cambio (igual que en Activo)' : 'Tipo de Cambio Oficial (BNA)';
-    return `<tr class="rubro-row rate-row"><td class="rubro-cell"><div class="rubro-lbl-row"><div class="nm"><span>${label}</span>${badge}</div></div></td>${cells}</tr>`;
+    return `<tr class="rubro-row rate-row"><td class="rubro-cell" data-calc="${escAttr(INFO_TC)}"><div class="rubro-lbl-row"><div class="nm"><span>${label}</span>${ICON_INFO}${badge}</div></div></td>${cells}</tr>`;
   }
 
   function commentsToggleRow(){
@@ -914,7 +1099,7 @@ async function renderGrid(monthsOverride){
     if(!commentsExpanded) return '';
     const cells = visibleMonths.map(m=>{
       const val = monthData[m].comentario || '';
-      if(readonly){
+      if(esConj || !PERM.comentarios){
         return `<td class="comment-cell"><div class="comment-view">${val ? val.replace(/</g,'&lt;').replace(/\n/g,'<br>') : '—'}</div></td>`;
       }
       return `<td class="comment-cell"><textarea class="comment-input" data-month="${m}" rows="5" placeholder="Análisis de ${MESES[m]}…">${val.replace(/</g,'&lt;')}</textarea></td>`;
@@ -922,33 +1107,26 @@ async function renderGrid(monthsOverride){
     return `<tr class="rubro-row comments-data-row"><td class="rubro-cell" style="vertical-align:top">Notas</td>${cells}</tr>`;
   }
 
+  // Filtro Corriente / No corriente: "Todo" muestra el balance completo; las otras dos vistas suprimen
+  // las secciones del otro plazo, los totales generales (mezclan los dos plazos) y los ratios que dependen de ellos.
+  const vc = state.vistaCte || 'todo';
+  const verCte = vc !== 'nocte', verNoCte = vc !== 'cte', todo = vc === 'todo';
   const rows = [
-    sectionHd('Activo Corriente'),
-    ...ACTIVO_CTE.map(fieldRow),
-    rateRow(),
-    totalRow('Total Activo Corriente','totActCte'),
-    sectionHd('Activo No Corriente'),
-    ...ACTIVO_NOCTE.map(fieldRow),
-    totalRow('Total Activo No Corriente','totActNoCte'),
-    totalRow('Total Activo','totActivo',true),
-    sectionHd('Pasivo Corriente'),
-    ...PASIVO_CTE.map(fieldRow),
-    rateRow(true),
-    totalRow('Total Pasivo Corriente','totPasCte'),
-    sectionHd('Pasivo No Corriente'),
-    ...PASIVO_NOCTE.map(fieldRow),
-    totalRow('Total Pasivo No Corriente','totPasNoCte'),
-    totalRow('Total Pasivo','totPasivo',true),
-    totalRow('Patrimonio Neto','patrimonioNeto',true),
+    ...(verCte ? seccion('Activo Corriente','act_cte', ACTIVO_CTE, 'Total Activo Corriente','totActCte', true) : []),
+    ...(verNoCte ? seccion('Activo No Corriente','act_nocte', ACTIVO_NOCTE, 'Total Activo No Corriente','totActNoCte') : []),
+    ...(todo ? [totalRow('Total Activo','totActivo',true)] : []),
+    ...(verCte ? seccion('Pasivo Corriente','pas_cte', PASIVO_CTE, 'Total Pasivo Corriente','totPasCte', 'compact') : []),
+    ...(verNoCte ? seccion('Pasivo No Corriente','pas_nocte', PASIVO_NOCTE, 'Total Pasivo No Corriente','totPasNoCte') : []),
+    ...(todo ? [totalRow('Total Pasivo','totPasivo',true), totalRow('Patrimonio Neto','patrimonioNeto',true)] : []),
     sectionHd('Ratios'),
-    ratioRow('Liquidez Corriente','liquidez', 'AC / PC'),
-    ratioRow('Prueba Ácida','pruebaAcida', '(AC − Bienes de Cambio) / PC'),
-    ratioRow('Endeudamiento','endeudamiento', 'Pasivo Total / Patrimonio Neto'),
-    ratioRow('Solvencia','solvencia', 'Activo Total / Pasivo Total'),
-    ratioRow('Cobertura del Pasivo con Patrimonio','coberturaPasPatrimonio', 'Patrimonio Neto / Pasivo Total'),
-    pctRow('% Pasivo Corriente s/ Pasivo Total','pctPasCte', 'PC / Pasivo Total'),
-    pctRow('% Pasivo No Corriente s/ Pasivo Total','pctPasNoCte', 'PNC / Pasivo Total'),
-    totalRow('Capital de Trabajo','capitalTrabajo', false, 'AC − PC'),
+    ...(verCte ? [ratioRow('Liquidez Corriente','liquidez', 'AC / PC'),
+                  ratioRow('Prueba Ácida','pruebaAcida', '(AC − Bienes de Cambio) / PC')] : []),
+    ...(todo ? [ratioRow('Endeudamiento','endeudamiento', 'Pasivo Total / Patrimonio Neto'),
+                ratioRow('Solvencia','solvencia', 'Activo Total / Pasivo Total'),
+                ratioRow('Cobertura del Pasivo con Patrimonio','coberturaPasPatrimonio', 'Patrimonio Neto / Pasivo Total')] : []),
+    ...(verCte ? [pctRow('% Pasivo Corriente s/ Pasivo Total','pctPasCte', 'PC / Pasivo Total')] : []),
+    ...(verNoCte ? [pctRow('% Pasivo No Corriente s/ Pasivo Total','pctPasNoCte', 'PNC / Pasivo Total')] : []),
+    ...(verCte ? [totalRow('Capital de Trabajo','capitalTrabajo', false, 'AC − PC')] : []),
     commentsToggleRow(),
     autoSummaryRow(),
     commentsRow()
@@ -956,11 +1134,21 @@ async function renderGrid(monthsOverride){
 
   document.getElementById('gridTable').innerHTML = `<thead>${headRow}</thead><tbody>${rows}</tbody>`;
 
+  document.querySelectorAll('#gridTable tr.section-hd[data-seccion]').forEach(tr=>{
+    const toggle = ()=>{
+      const k = tr.dataset.seccion;
+      seccionesCerradas.has(k) ? seccionesCerradas.delete(k) : seccionesCerradas.add(k);
+      lsSet('sitpat_secciones_cerradas', [...seccionesCerradas]);
+      renderGrid(monthsOverride);
+    };
+    tr.addEventListener('click', toggle);
+    tr.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); toggle(); } });
+  });
   document.getElementById('commentsToggleRow').addEventListener('click', ()=>{
     commentsExpanded = !commentsExpanded;
     renderGrid(monthsOverride);
   });
-  if(!readonly){
+  if(!esConj){
     document.querySelectorAll('textarea.comment-input').forEach(ta=>{
       ta.addEventListener('click', e=> e.stopPropagation());
       ta.addEventListener('change', async ()=>{
@@ -972,7 +1160,7 @@ async function renderGrid(monthsOverride){
     });
   }
 
-  if(!readonly){
+  if(!esConj){
     document.querySelectorAll('input[data-field]').forEach(inp=>{
       inp.addEventListener('change', async ()=>{
         const m = Number(inp.dataset.month);
@@ -1026,20 +1214,26 @@ async function renderGrid(monthsOverride){
     btn.addEventListener('click', ()=> openDrillModal(btn.dataset.drill, Number(btn.dataset.month)));
   });
 
-  document.getElementById('calloutBox').innerHTML = readonly ? `
-    <div class="callout"><b>Vista Conjunto:</b> es de solo lectura, suma SPL + Spotsline mes a mes.</div>` : '';
+  const notaVista = todo ? '' : `<div class="vista-note">Estás viendo solo <b>${vc==='cte'?'Corriente':'No corriente'}</b>. Se ocultan ${vc==='cte'?'Activo y Pasivo No Corriente':'Activo y Pasivo Corriente, Capital de Trabajo, Liquidez y Prueba Ácida'}, los totales generales, el Patrimonio Neto y los ratios que los usan. <button type="button" id="verTodoBtn">Ver todo</button></div>`;
+  document.getElementById('calloutBox').innerHTML = notaVista + (esConj ? `
+    <div class="callout"><b>Vista Conjunto:</b> es de solo lectura, suma SPL + Spotsline mes a mes.</div>` : (!PERM.editar ? `
+    <div class="callout"><b>Solo lectura:</b> tu usuario puede ver este panel pero no cargar valores a mano.</div>` : ''));
+  const vtb = document.getElementById('verTodoBtn');
+  if(vtb) vtb.addEventListener('click', ()=>{ state.vistaCte='todo'; lsSet('sitpat_vista_cte','todo'); renderCteFilter(); renderGrid(); });
 
   document.getElementById('footerNote').textContent =
-    `${entLabel} · ${state.year} · Guardado localmente en este navegador · celdas con borde azul = valor estimado, a confirmar`;
+    `${entLabel} · ${state.year} · Datos compartidos con el equipo (Supabase) · celdas con borde azul = valor estimado, a confirmar`;
 }
 
 async function renderAll(){
   renderEntityFilter();
+  renderCteFilter();
   renderYearNav();
   await renderGrid();
 }
 
 /* ============ FILE UPLOAD MODAL ============ */
+const RUTA_STOCK_ODOO = 'En Odoo, elegí la empresa (SPL o Spotsline) → <b>Inventario</b> → <b>Reportes</b> → <b>Existencias</b> → seleccioná todo → <b>Exportar</b>. Después aplicá el filtro <b>Situación patrimonial</b> y exportá de nuevo: ese Excel es el que se sube acá, uno por empresa.';
 let uploadCtx = null;
 
 function closeModal(){ document.getElementById('overlay').classList.remove('show'); document.getElementById('modal').style.width=''; uploadCtx = null; }
@@ -1051,6 +1245,7 @@ function openUploadModal(fieldId){
     <span class="close-x" id="closeX">&times;</span>
     <h3>Subir archivo — ${f.label}</h3>
     <div class="desc">Subí el reporte del sistema (.xlsx, .xls o .csv). Después elegís qué columna sumar y a qué mes de ${state.year} se lo aplico.</div>
+    ${(fieldId==='producto_terminado'||fieldId==='materia_prima') ? `<div class="desc" style="background:var(--bg3);border-left:3px solid var(--yellow);padding:8px 10px;border-radius:6px"><b style="color:var(--yellow)">De dónde sale el archivo:</b> ${RUTA_STOCK_ODOO}<br>Estás cargando <b>${state.entity==='spl'?'SPL':'Spotsline'}</b>: exportá el de esa empresa.</div>` : ''}
     <select id="monthTarget">${MESES.map((m,i)=>`<option value="${i}" ${i===uploadCtx.month?'selected':''}>${m}</option>`).join('')}</select>
     <input type="file" id="fileInput" accept=".xlsx,.xls,.csv">
     <div id="uploadBody"></div>
@@ -1080,6 +1275,7 @@ function handleFile(e){
         });
       } else {
         const wb = XLSX.read(evt.target.result, {type:'array'});
+        if(uploadCtx) uploadCtx.hoja = wb.SheetNames[0];
         const ws = wb.Sheets[wb.SheetNames[0]];
         rows = XLSX.utils.sheet_to_json(ws, {defval:''});
       }
@@ -1093,6 +1289,7 @@ function handleFile(e){
     }
     uploadCtx.rows = rows;
     uploadCtx.filename = file.name;
+    uploadCtx.file = file;
     const cols = Object.keys(rows[0]);
     uploadCtx.columns = cols;
     const numericCols = cols.filter(c => rows.some(r => r[c]!=='' && !isNaN(parseFloat(String(r[c]).replace(/\./g,'').replace(',','.')))));
@@ -1125,6 +1322,7 @@ function handleFile(e){
       },0);
       document.getElementById('previewTotal').textContent = 'Total = ' + fmtMoney(total);
       uploadCtx.total = total;
+      uploadCtx.col = col;
     };
     colSel.addEventListener('change', updatePreview);
     updatePreview();
@@ -1136,29 +1334,171 @@ function handleFile(e){
 }
 
 async function confirmUpload(){
-  const d = await loadPeriod(state.entity, state.year, uploadCtx.month);
+  const ctx = uploadCtx;
+  if(!ctx) return;
+  const entity = state.entity, year = state.year, month = ctx.month;
+  const d = await loadPeriod(entity, year, month);
   if(d.frozen){
     closeModal();
-    alert(`${MESES[uploadCtx.month]} ${state.year} está congelado 🔒 para ${state.entity==='spl'?'SPL':'Spotsline'} — no se cargó el archivo. Descongelalo primero si necesitás actualizar este mes.`);
+    alert(`${MESES[month]} ${year} está congelado 🔒 para ${entity==='spl'?'SPL':'Spotsline'} — no se cargó el archivo. Descongelalo primero si necesitás actualizar este mes.`);
     return;
   }
-  d.values[uploadCtx.fieldId] = uploadCtx.total;
-  d.meta[uploadCtx.fieldId] = {source:'archivo', filename: uploadCtx.filename, updatedAt: new Date().toISOString()};
-  await savePeriod(state.entity, state.year, uploadCtx.month, d);
+  const importId = newImportId(), nowIso = new Date().toISOString();
+  d.values[ctx.fieldId] = ctx.total;
+  d.meta[ctx.fieldId] = {source:'archivo', importId, filename: ctx.filename, updatedAt: nowIso};
+  await savePeriod(entity, year, month, d);
   closeModal();
   renderGrid();
+  await registerImport({
+    id:importId, tipo:'stock', archivo: ctx.filename, size: ctx.file ? ctx.file.size : 0, fecha: nowIso, usuario:USUARIO.nombre,
+    entidades:[entity], aplicado:[{e:entity, y:year, m:month, f:ctx.fieldId, v:ctx.total}], saltados:[],
+    extra:{columna: ctx.col, filas: ctx.rows ? ctx.rows.length : 0, hojas: ctx.hoja ? [ctx.hoja] : []}
+  }, ctx.file);
 }
 
 document.getElementById('overlay').addEventListener('click', (e)=>{ if(e.target.id==='overlay') closeModal(); });
 
+/* ============ ⓘ "¿QUÉ ES Y CÓMO SE ANALIZA?" (globo al pasar el mouse o tocar el ícono, como en Cobranzas) ============ */
+const ICON_INFO = '<span class="calc-ic" tabindex="0" aria-label="Qué es y cómo se analiza">i</span>';
+function escAttr(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+// [qué es, cómo se analiza]. De dónde sale se toma de "Cómo se genera" (METODOLOGIA) para no duplicar textos.
+const INFO_RUBROS = {
+  caja_bancos:['Efectivo en caja más el saldo de todas las cuentas bancarias al cierre del mes. Si un banco está en descubierto, resta.','Es el dinero disponible ya. Negativo significa que se está usando el descubierto (deuda bancaria que cobra interés). Miralo junto con Cheques emitidos: si los cheques a cubrir superan Caja y Bancos, hay que conseguir fondos.'],
+  valores_cartera:['Cheques de terceros recibidos de clientes que todavía no se depositaron o no vencieron.','Es casi efectivo, pero depende de que el cheque se acredite. Un aumento fuerte puede indicar que se cobra con plazos más largos.'],
+  deudores_venta:['Lo que los clientes deben por facturas emitidas y no cobradas.','Suele ser el activo corriente más grande. Si crece más rápido que las ventas, se está cobrando más lento. El detalle por cliente y por atraso está en el panel de Cobranzas.'],
+  producto_terminado:['Mercadería lista para vender, valuada a costo.','Es stock: se convierte en dinero recién cuando se vende y se cobra. Por eso la Prueba Ácida lo descuenta. Si sube mes a mes sin que suban las ventas, hay stock inmovilizado.'],
+  materia_prima:['Materiales e insumos para fabricar (solo Spotsline, que produce).','Igual que Producto terminado: es activo, pero no líquido. Conviene compararlo con el ritmo de producción.'],
+  dolares_comex:['Dólares destinados a pagos de importaciones, pasados a pesos con el Tipo de Cambio del mes.','Su valor en pesos se mueve con el dólar aunque no cambie la cantidad de dólares. Compensa en parte a Proveedores Exterior.'],
+  moneda_extranjera:['Dólares en caja o cuentas, pasados a pesos con el Tipo de Cambio del mes.','Si figura en naranja falta el Tipo de Cambio de ese mes. Una suba puede ser solo por la cotización, no por más dólares.'],
+  inmuebles:['Edificios y terrenos propios, a valor fijo cargado a mano.','No se convierten en dinero en el corto plazo. Dan respaldo al Patrimonio Neto y a la Solvencia, pero no ayudan a pagar deudas del mes.'],
+  maquinarias:['Máquinas y equipos de producción, a valor fijo cargado a mano.','Respaldo patrimonial de largo plazo. Se actualiza rara vez: revisalo si se compra o vende equipo.'],
+  rodados:['Vehículos de la empresa, a valor fijo cargado a mano.','Respaldo patrimonial de largo plazo. Se actualiza rara vez.'],
+  cheques_emitidos:['Cheques propios entregados a proveedores que todavía no se debitaron al cierre del mes.','Es la deuda más inmediata: se debita sola en la fecha del cheque. Compará contra Caja y Bancos + Valores en cartera.'],
+  oblig_impositivas:['Impuestos vencidos o por vencer con ARCA que no están en un plan de pago.','Generan intereses resarcitorios y punitorios. Si crece, se están pateando impuestos. Tocá 🔎 para ver el detalle.'],
+  proveedores_ext:['Deuda con proveedores del exterior (importaciones), en pesos.','Está expuesta al tipo de cambio: si sube el dólar, sube la deuda. Tocá 🔎 para ver proveedor, factura y USD.'],
+  proveedores_loc:['Lo que se les debe a proveedores locales por facturas recibidas.','Si crece más rápido que las compras, se les está pagando más lento. El detalle está en el panel de Proveedores.'],
+  deudas_fiscales_cte:['Cuotas de planes de pago con ARCA que vencen dentro de los próximos 12 meses.','Es deuda refinanciada: hay que pagar la cuota para no caer el plan. Compará con la parte No Corriente para ver cuánto se viene encima este año.'],
+  deudas_bancarias_cte:['Cuotas de préstamos bancarios que vencen dentro de los próximos 12 meses.','Muestra cuánto del crédito hay que devolver este año. Si pasa plata de No Corriente a Corriente es normal: se acerca el vencimiento.'],
+  sueldos:['Sueldos y cargas sociales devengados en el mes y todavía no pagados.','Es deuda de muy corto plazo y prioritaria. Debería ser cercana a cero salvo los días entre el cierre y el pago.'],
+  desvinculaciones_cte:['Cuotas de indemnizaciones a ex empleados que vencen en los próximos 12 meses.','Compromiso fijo pactado. Tocá 🔎 para ver cada cuota.'],
+  otras_deudas_cte:['Cuotas de otros planes de pago (Rentas, ARBA y similares) que vencen en los próximos 12 meses.','Igual que Deudas fiscales AFIP: cuotas que hay que sostener para no perder el plan.'],
+  demandas:['Juicios o reclamos con posible pago futuro.','Todavía en definición: falta la fuente.'],
+  deudas_fiscales_nocte:['Cuotas de planes de pago con ARCA que vencen después de los próximos 12 meses.','No presiona la caja de este año, pero es deuda. Mes a mes va pasando a Corriente.'],
+  deudas_bancarias_nocte:['Cuotas de préstamos bancarios que vencen después de los próximos 12 meses.','Financiación de largo plazo. Mes a mes va pasando a Corriente.'],
+  otras_deudas_fiscales:['Otras deudas fiscales de largo plazo.','Todavía en definición: falta la fuente.'],
+  desvinculaciones_nocte:['Cuotas de indemnizaciones que vencen después de los próximos 12 meses.','Compromiso de largo plazo; va pasando a Corriente.'],
+  otras_deudas_nocte:['Cuotas de otros planes de pago que vencen después de los próximos 12 meses.','Deuda de largo plazo; va pasando a Corriente.']
+};
+function fuenteDe(f){
+  for(const g of METODOLOGIA){ for(const [lbl,desc] of g.items){
+    const l = lbl.toLowerCase(), n = f.label.toLowerCase();
+    if(l===n || l.startsWith(n+' (') || l.split(' / ').some(x=>x.trim()===n) || (l.includes(n) && l.includes(','))) return desc;
+  } }
+  return f.note || '';
+}
+function infoRubro(f){
+  const i = INFO_RUBROS[f.id]; if(!i) return '';
+  const plazo = ACTIVO_CTE.includes(f) ? 'Activo Corriente' : ACTIVO_NOCTE.includes(f) ? 'Activo No Corriente' : PASIVO_CTE.includes(f) ? 'Pasivo Corriente' : 'Pasivo No Corriente';
+  const fuente = fuenteDe(f);
+  return `<div class="calc-tip-h">${f.label} · ${plazo}</div><p>${i[0]}</p>`
+    + (fuente ? `<div class="ct-s">De dónde sale</div><p>${fuente}</p>` : '')
+    + `<div class="ct-s">Cómo se analiza</div><p>${i[1]}</p>`;
+}
+const INFO_TC = `<div class="calc-tip-h">Tipo de Cambio Oficial (BNA)</div><p>Cotización del dólar que se usa para pasar a pesos Moneda Extranjera y Dólares Comex.</p><div class="ct-s">Cómo se analiza</div><p>Se carga uno por mes (o con "TC oficial de hoy"). Si falta, esos rubros quedan en dólares y en naranja, y los totales salen mal.</p>`;
+// Totales y ratios: qué es, fórmula con los números del mes y cómo leerlo.
+const fM = v => fmtMoney(v), fX = v => fmtRatio(v), fP = v => isFinite(v) ? (v*100).toFixed(1)+'%' : '—';
+const cRow = (a,b,cls) => `<div class="calc-row${cls?' '+cls:''}"><span>${a}</span><span>${b}</span></div>`;
+const INFO_TOTAL = {
+  totActCte:{t:'Total Activo Corriente', q:'Todo lo que es dinero o se convierte en dinero dentro de los próximos 12 meses.',
+    c:x=> ACTIVO_CTE.map(f=>cRow(f.label, fM(x.v[f.id]))).join('')+cRow('Total', fM(x.t.totActCte),'calc-tot'),
+    a:'Es lo que hay para hacer frente al Pasivo Corriente. Se lee junto con la Liquidez y el Capital de Trabajo.'},
+  totActNoCte:{t:'Total Activo No Corriente', q:'Bienes de uso de largo plazo: inmuebles, maquinarias y rodados.',
+    c:x=> ACTIVO_NOCTE.map(f=>cRow(f.label, fM(x.v[f.id]))).join('')+cRow('Total', fM(x.t.totActNoCte),'calc-tot'),
+    a:'Da respaldo patrimonial, pero no sirve para pagar deudas del mes.'},
+  totActivo:{t:'Total Activo', q:'Todo lo que tiene la empresa.',
+    c:x=> cRow('Activo Corriente', fM(x.t.totActCte))+cRow('Activo No Corriente', fM(x.t.totActNoCte))+cRow('Total Activo', fM(x.t.totActivo),'calc-tot'),
+    a:'Fijate qué parte es corriente: un activo grande pero casi todo inmovilizado no ayuda a la caja.'},
+  totPasCte:{t:'Total Pasivo Corriente', q:'Deudas que vencen dentro de los próximos 12 meses.',
+    c:x=> PASIVO_CTE.map(f=>cRow(f.label, fM(x.v[f.id]))).join('')+cRow('Total', fM(x.t.totPasCte),'calc-tot'),
+    a:'Es la presión de pagos del año. Comparalo con el Activo Corriente (Liquidez y Capital de Trabajo).'},
+  totPasNoCte:{t:'Total Pasivo No Corriente', q:'Deudas que vencen después de los próximos 12 meses.',
+    c:x=> PASIVO_NOCTE.map(f=>cRow(f.label, fM(x.v[f.id]))).join('')+cRow('Total', fM(x.t.totPasNoCte),'calc-tot'),
+    a:'No presiona la caja de este año, pero mes a mes una parte pasa a Corriente.'},
+  totPasivo:{t:'Total Pasivo', q:'Todo lo que debe la empresa.',
+    c:x=> cRow('Pasivo Corriente', fM(x.t.totPasCte))+cRow('Pasivo No Corriente', fM(x.t.totPasNoCte))+cRow('Total Pasivo', fM(x.t.totPasivo),'calc-tot'),
+    a:'Cuanto más concentrado en Corriente, más presión de corto plazo (ver % Pasivo Corriente).'},
+  patrimonioNeto:{t:'Patrimonio Neto', q:'Lo que es realmente de los socios: lo que se tiene menos lo que se debe.',
+    c:x=> cRow('Total Activo', fM(x.t.totActivo))+cRow('− Total Pasivo', fM(x.t.totPasivo))+cRow('Patrimonio Neto', fM(x.t.patrimonioNeto),'calc-tot'),
+    a:'Que crezca mes a mes es buena señal. Si es negativo, la empresa debe más de lo que tiene. El resumen automático del mes explica qué lo movió.'},
+  liquidez:{t:'Liquidez Corriente', q:'Cuántos pesos de activo corriente hay por cada peso de deuda de corto plazo.',
+    c:x=> cRow('Activo Corriente', fM(x.t.totActCte))+cRow('÷ Pasivo Corriente', fM(x.t.totPasCte))+cRow('Liquidez', fX(x.t.liquidez),'calc-tot'),
+    a:'Mayor a 1,5x: holgado. Entre 1x y 1,5x: justo. Menor a 1x: las deudas del año superan lo que hay para pagarlas.'},
+  pruebaAcida:{t:'Prueba Ácida', q:'Liquidez sin contar el stock, porque el stock primero hay que venderlo y cobrarlo.',
+    c:x=> { const st=(Number(x.v.producto_terminado)||0)+(Number(x.v.materia_prima)||0);
+      return cRow('Activo Corriente', fM(x.t.totActCte))+cRow('− Stock (PT + MP)', fM(st))+cRow('÷ Pasivo Corriente', fM(x.t.totPasCte))+cRow('Prueba Ácida', fX(x.t.pruebaAcida),'calc-tot'); },
+    a:'Cerca de 1x o más: se pueden pagar las deudas del año sin depender de vender stock. Muy por debajo de la Liquidez: la empresa depende mucho del stock.'},
+  endeudamiento:{t:'Endeudamiento', q:'Cuánto se debe por cada peso de patrimonio propio.',
+    c:x=> cRow('Total Pasivo', fM(x.t.totPasivo))+cRow('÷ Patrimonio Neto', fM(x.t.patrimonioNeto))+cRow('Endeudamiento', fX(x.t.endeudamiento),'calc-tot'),
+    a:'Menor a 1x: la empresa se financia más con capital propio que con deuda. Mayor a 1x: depende más de terceros. Si el Patrimonio Neto es negativo, este número no tiene sentido.'},
+  solvencia:{t:'Solvencia', q:'Cuántos pesos de activo hay por cada peso de deuda total.',
+    c:x=> cRow('Total Activo', fM(x.t.totActivo))+cRow('÷ Total Pasivo', fM(x.t.totPasivo))+cRow('Solvencia', fX(x.t.solvencia),'calc-tot'),
+    a:'Mayor a 1,5x: sólido. Menor a 1x: aun vendiendo todo no alcanza para pagar todas las deudas.'},
+  coberturaPasPatrimonio:{t:'Cobertura del Pasivo con Patrimonio', q:'Qué parte de la deuda total está respaldada por patrimonio propio.',
+    c:x=> cRow('Patrimonio Neto', fM(x.t.patrimonioNeto))+cRow('÷ Total Pasivo', fM(x.t.totPasivo))+cRow('Cobertura', fX(x.t.coberturaPasPatrimonio),'calc-tot'),
+    a:'Es la inversa del Endeudamiento. Más alto es mejor.'},
+  pctPasCte:{t:'% Pasivo Corriente s/ Pasivo Total', q:'Qué parte de toda la deuda vence en los próximos 12 meses.',
+    c:x=> cRow('Pasivo Corriente', fM(x.t.totPasCte))+cRow('÷ Total Pasivo', fM(x.t.totPasivo))+cRow('%', fP(x.t.pctPasCte),'calc-tot'),
+    a:'Cuanto más alto, más presión de corto plazo. Si baja porque se refinanció a largo plazo, la caja respira.'},
+  pctPasNoCte:{t:'% Pasivo No Corriente s/ Pasivo Total', q:'Qué parte de toda la deuda vence después de los próximos 12 meses.',
+    c:x=> cRow('Pasivo No Corriente', fM(x.t.totPasNoCte))+cRow('÷ Total Pasivo', fM(x.t.totPasivo))+cRow('%', fP(x.t.pctPasNoCte),'calc-tot'),
+    a:'Es el complemento del % Corriente: los dos suman 100%.'},
+  capitalTrabajo:{t:'Capital de Trabajo', q:'Lo que sobra (o falta) del activo corriente después de cubrir las deudas de corto plazo.',
+    c:x=> cRow('Activo Corriente', fM(x.t.totActCte))+cRow('− Pasivo Corriente', fM(x.t.totPasCte))+cRow('Capital de Trabajo', fM(x.t.capitalTrabajo),'calc-tot'),
+    a:'Positivo: hay colchón para operar. Negativo: hay que financiar el día a día con más deuda o con aportes.'}
+};
+function infoTotal(key, x){
+  const d = INFO_TOTAL[key]; if(!d) return '';
+  let h = `<div class="calc-tip-h">${d.t}${x?' · '+x.mes:''}</div><p>${d.q}</p>`;
+  if(x) h += `<div class="ct-s">La cuenta de este mes</div>${d.c(x)}`;
+  else h += `<div class="ct-s">Cómo se calcula</div><p class="calc-nota">Pasá el mouse por el número de un mes para ver la cuenta con sus valores.</p>`;
+  return h + `<div class="ct-s">Cómo se analiza</div><p>${d.a}</p>`;
+}
+(function(){
+  const tip = document.createElement('div'); tip.className='calc-tip'; tip.hidden=true; tip.setAttribute('role','tooltip'); document.body.appendChild(tip);
+  let actual=null, fijo=false;
+  function mostrar(el){
+    actual=el; tip.innerHTML=el.getAttribute('data-calc'); tip.hidden=false;
+    const r=el.getBoundingClientRect(), w=Math.min(400, window.innerWidth-24); tip.style.width=w+'px';
+    tip.style.left=Math.min(Math.max(12,r.left), window.innerWidth-w-12)+'px';
+    const h=tip.offsetHeight; let top=r.bottom+8; if(top+h>window.innerHeight-8) top=Math.max(8, r.top-h-8); tip.style.top=top+'px';
+  }
+  function ocultar(){ tip.hidden=true; actual=null; fijo=false; }
+  document.addEventListener('mouseover', e=>{ if(fijo) return; const el=e.target.closest&&e.target.closest('[data-calc]');
+    if(el && el!==actual) mostrar(el); else if(!el && actual && !tip.contains(e.target)) ocultar(); });
+  // tocar el ícono ⓘ (o en celular) lo deja fijo; tocar afuera lo cierra
+  document.addEventListener('click', e=>{ const ic=e.target.closest&&e.target.closest('.calc-ic');
+    if(ic){ e.stopPropagation(); e.preventDefault(); const el=ic.closest('[data-calc]'); if(fijo&&actual===el){ ocultar(); return; } mostrar(el); fijo=true; return; }
+    if(fijo && !tip.contains(e.target)) ocultar(); }, true);
+  document.addEventListener('focusin', e=>{ const ic=e.target.closest&&e.target.closest('.calc-ic'); if(ic) mostrar(ic.closest('[data-calc]')); });
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') ocultar(); });
+  window.addEventListener('scroll', ()=>{ if(!fijo) ocultar(); }, {passive:true, capture:true});
+})();
+
 /* ============ METODOLOGÍA ("Cómo se genera") ============ */
 const METODOLOGIA = [
+  {group:'Cómo leer la tabla', items:[
+    ['Filtro Todo / Corriente / No corriente', 'Arriba, al lado de la empresa. "Corriente" deja solo Activo y Pasivo Corriente, Capital de Trabajo, Liquidez, Prueba Ácida y % Pasivo Corriente. "No corriente" deja Activo y Pasivo No Corriente y % Pasivo No Corriente. En las dos se ocultan Total Activo, Total Pasivo, Patrimonio Neto, Endeudamiento, Solvencia y Cobertura, porque mezclan los dos plazos. Los números no cambian: solo se ocultan filas. El Excel y el PDF siguen saliendo completos.'],
+    ['Usuarios y permisos', 'Se entra con el usuario del Panel de Paneles. Qué empresas ve cada uno y qué puede hacer (cargar a mano, importar, congelar, notas, exportar, backup, ver el registro) se define en la portada: Usuarios → Permisos dentro de Situación Patrimonial. Los administradores generales hacen todo.'],
+    ['Registro de cambios', 'Botón "Registro de cambios": lista cada valor que cambió, con usuario, fecha, empresa, mes, rubro, valor anterior, valor nuevo y origen (manual, archivo, paneles, backup, congelar). Se puede filtrar y bajar a Excel.'],
+    ['Íconos ⓘ', 'Pasá el mouse por el nombre de un rubro, total o ratio (o tocá la ⓘ en el celular) para ver qué es, de dónde sale y cómo se analiza. Sobre el número de un total o ratio, el globo muestra la cuenta con los valores de ese mes.'],
+    ['Plegar secciones', 'Tocá el título de una sección (Activo Corriente, Pasivo No Corriente, etc.) para ocultar sus rubros y dejar solo el total, igual que los bloques del Estado de resultados. Volvé a tocarlo para abrirla. El filtro y las secciones plegadas se recuerdan en tu navegador.']
+  ]},
   {group:'Activo Corriente', items:[
     ['Caja y Bancos', 'Se importa desde la hoja "Caja y Bancos" del Cash Flow: para cada mes se toma el saldo del último día con datos, arrastrando hacia adelante el último valor cargado en los días sin movimiento (fines de semana, etc).'],
     ['Valores en cartera', 'Igual método que Caja y Bancos, sumando las filas de tipo "Cheques de terceros" de esa misma hoja.'],
     ['Deudores por venta', 'Se consulta en vivo el panel de Cobranzas (tabla "clientes" en Supabase) al apretar "Sincronizar Paneles": suma el campo deuda de las filas de la empresa correspondiente más las marcadas "Ambas".'],
-    ['Producto terminado', 'Se sube el reporte de stock del sistema (Variante de producto) por empresa. Para SPL se suma todo lo categorizado "Producto Terminado SPL", más Componente/Insumo SPL, Accesorios SPL e insumos de embalaje (SPL es distribuidora: compra y revende, todo el stock es producto terminado). Para Spotsline se suma "Producto Terminado / ..." (fabrica productos propios).'],
-    ['Materia prima', 'Mismo reporte de stock. Solo aplica a Spotsline (fabricante): suma Materia prima + Componente/Insumo + Parte/Pieza. No aplica a SPL por ser distribuidora.'],
+    ['Producto terminado', 'Archivo: En Odoo, elegí la empresa (SPL o Spotsline) → <b>Inventario</b> → <b>Reportes</b> → <b>Existencias</b> → seleccioná todo → <b>Exportar</b>. Después aplicá el filtro <b>Situación patrimonial</b> y exportá de nuevo: ese Excel es el que se sube acá, uno por empresa. Se sube el reporte de stock del sistema (Variante de producto) por empresa. Para SPL se suma todo lo categorizado "Producto Terminado SPL", más Componente/Insumo SPL, Accesorios SPL e insumos de embalaje (SPL es distribuidora: compra y revende, todo el stock es producto terminado). Para Spotsline se suma "Producto Terminado / ..." (fabrica productos propios).'],
+    ['Materia prima', 'Mismo reporte de stock (misma ruta de Odoo: Inventario → Reportes → Existencias, filtro Situación patrimonial). Solo aplica a Spotsline (fabricante): suma Materia prima + Componente/Insumo + Parte/Pieza. No aplica a SPL por ser distribuidora.'],
     ['Dólares Comex', 'Monto en dólares confirmado a mano (foto set-2026). Se convierte a pesos multiplicando por el Tipo de Cambio del mes, igual que Moneda Extranjera.'],
     ['Moneda Extranjera', 'Se importa desde la hoja "Caja y Bancos" del Cash Flow (fila "Moneda Extranjera"), en dólares. Se convierte a pesos multiplicando por el Tipo de Cambio Oficial (BNA) del mes, que es una fila editable aparte — si no hay cotización cargada para ese mes, el valor queda en dólares sin convertir (marcado en naranja) hasta que cargues el tipo de cambio.']
   ]},
@@ -1364,7 +1704,8 @@ function handleCFFile(e){
     try{ deudaExtParsed = parseDeudaExtSheet(wb, monthKeys); }
     catch(err){ deudaExtError = err.message; }
 
-    cfImportCtx = {parsed, arcaParsed, planesParsed, creditosParsed, sueldosParsed, desvincParsed, otrasParsed, deudaExtParsed, filename: file.name};
+    cfImportCtx = {parsed, arcaParsed, planesParsed, creditosParsed, sueldosParsed, desvincParsed, otrasParsed, deudaExtParsed, filename: file.name, file,
+      hojas: [parsed.sheetName, parsed.chPropiosSheet, arcaParsed&&arcaParsed.sheetName, planesParsed&&planesParsed.sheetName, creditosParsed&&creditosParsed.sheetName, sueldosParsed&&sueldosParsed.sheetName, desvincParsed&&desvincParsed.sheetName, otrasParsed&&otrasParsed.sheetName, deudaExtParsed&&deudaExtParsed.sheetName].filter(Boolean)};
     const monthsSorted = monthKeys.slice().sort((a,b)=> a.year-b.year || a.month-b.month);
     const rowsHtml = monthsSorted.map(mk=>{
       const spl = (parsed.results.spl[mk.year]||{})[mk.month] || {};
@@ -1436,9 +1777,11 @@ function handleCFFile(e){
 }
 
 async function confirmCFImport(){
-  const {parsed, arcaParsed, planesParsed, creditosParsed, sueldosParsed, desvincParsed, otrasParsed, deudaExtParsed, filename} = cfImportCtx;
+  const {parsed, arcaParsed, planesParsed, creditosParsed, sueldosParsed, desvincParsed, otrasParsed, deudaExtParsed, filename, file, hojas} = cfImportCtx;
   const monthKeys = parsed.monthKeys;
-  const skippedFrozen = [];
+  const importId = newImportId(), nowIso = new Date().toISOString();
+  const skippedFrozen = [], applied = [];
+  const sumT = arr => arr.reduce((a,i)=>a+i.total,0);
   for(const entity of ['spl','spotsline']){
     for(const mk of monthKeys){
       const year = mk.year, month = mk.month;
@@ -1447,58 +1790,53 @@ async function confirmCFImport(){
         skippedFrozen.push(`${entity==='spl'?'SPL':'Spotsline'} ${MESES[month]} ${year}`);
         continue; // mes congelado: no se toca
       }
+      // escribe un rubro y lo deja anotado para el registro de cargas ("Archivos cargados")
+      const setF = (f, value, extra)=>{
+        d.values[f] = value;
+        d.meta[f] = Object.assign({source:'archivo', importId, filename, updatedAt: nowIso}, extra||{});
+        applied.push({e:entity, y:year, m:month, f, v:value});
+      };
       const vals = (parsed.results[entity][year]||{})[month] || {};
       ['caja_bancos','valores_cartera','cheques_emitidos'].forEach(f=>{
         if(vals[f]===undefined) return;
-        d.values[f] = vals[f];
-        d.meta[f] = {source:'archivo', filename, updatedAt: new Date().toISOString()};
+        setF(f, vals[f]);
       });
       // Moneda Extranjera queda en USD dentro de meta; el valor en $ se calcula solo con el Tipo de Cambio
       delete d.values.moneda_extranjera;
-      d.meta.moneda_extranjera = {source:'archivo', usd: vals.moneda_extranjera, filename, updatedAt: new Date().toISOString()};
+      d.meta.moneda_extranjera = {source:'archivo', importId, usd: vals.moneda_extranjera, filename, updatedAt: nowIso};
+      applied.push({e:entity, y:year, m:month, f:'moneda_extranjera', v:vals.moneda_extranjera||0, u:'USD'});
 
       if(arcaParsed && year===arcaParsed.lastMonth.year && month===arcaParsed.lastMonth.month){
         const items = arcaParsed.items[entity];
-        d.values.oblig_impositivas = items.reduce((a,i)=>a+i.total,0);
-        d.meta.oblig_impositivas = {source:'archivo', filename, updatedAt:new Date().toISOString(), items};
+        setF('oblig_impositivas', sumT(items), {items});
       }
       if(planesParsed){
         const b = planesParsed.results[entity][year][month];
-        d.values.deudas_fiscales_cte = b.cte.reduce((a,i)=>a+i.total,0);
-        d.values.deudas_fiscales_nocte = b.nocte.reduce((a,i)=>a+i.total,0);
-        d.meta.deudas_fiscales_cte = {source:'archivo', filename, updatedAt:new Date().toISOString(), items:b.cte};
-        d.meta.deudas_fiscales_nocte = {source:'archivo', filename, updatedAt:new Date().toISOString(), items:b.nocte};
+        setF('deudas_fiscales_cte', sumT(b.cte), {items:b.cte});
+        setF('deudas_fiscales_nocte', sumT(b.nocte), {items:b.nocte});
       }
       if(creditosParsed){
         const b = creditosParsed.results[entity][year][month];
-        d.values.deudas_bancarias_cte = b.cte.reduce((a,i)=>a+i.total,0);
-        d.values.deudas_bancarias_nocte = b.nocte.reduce((a,i)=>a+i.total,0);
-        d.meta.deudas_bancarias_cte = {source:'archivo', filename, updatedAt:new Date().toISOString(), items:b.cte};
-        d.meta.deudas_bancarias_nocte = {source:'archivo', filename, updatedAt:new Date().toISOString(), items:b.nocte};
+        setF('deudas_bancarias_cte', sumT(b.cte), {items:b.cte});
+        setF('deudas_bancarias_nocte', sumT(b.nocte), {items:b.nocte});
       }
       if(sueldosParsed){
         const items = sueldosParsed.results[entity][year][month];
-        d.values.sueldos = items.reduce((a,i)=>a+i.total,0);
-        d.meta.sueldos = {source:'archivo', filename, updatedAt:new Date().toISOString(), items};
+        setF('sueldos', sumT(items), {items});
       }
       if(desvincParsed){
         const b = desvincParsed.results[entity][year][month];
-        d.values.desvinculaciones_cte = b.cte.reduce((a,i)=>a+i.total,0);
-        d.values.desvinculaciones_nocte = b.nocte.reduce((a,i)=>a+i.total,0);
-        d.meta.desvinculaciones_cte = {source:'archivo', filename, updatedAt:new Date().toISOString(), items:b.cte};
-        d.meta.desvinculaciones_nocte = {source:'archivo', filename, updatedAt:new Date().toISOString(), items:b.nocte};
+        setF('desvinculaciones_cte', sumT(b.cte), {items:b.cte});
+        setF('desvinculaciones_nocte', sumT(b.nocte), {items:b.nocte});
       }
       if(otrasParsed){
         const b = otrasParsed.results[entity][year][month];
-        d.values.otras_deudas_cte = b.cte.reduce((a,i)=>a+i.total,0);
-        d.values.otras_deudas_nocte = b.nocte.reduce((a,i)=>a+i.total,0);
-        d.meta.otras_deudas_cte = {source:'archivo', filename, updatedAt:new Date().toISOString(), items:b.cte};
-        d.meta.otras_deudas_nocte = {source:'archivo', filename, updatedAt:new Date().toISOString(), items:b.nocte};
+        setF('otras_deudas_cte', sumT(b.cte), {items:b.cte});
+        setF('otras_deudas_nocte', sumT(b.nocte), {items:b.nocte});
       }
       if(deudaExtParsed){
         const items = deudaExtParsed.results[entity][year][month];
-        d.values.proveedores_ext = items.reduce((a,i)=>a+i.total,0);
-        d.meta.proveedores_ext = {source:'archivo', filename, updatedAt:new Date().toISOString(), items};
+        setF('proveedores_ext', sumT(items), {items});
       }
       await savePeriod(entity, year, month, d);
     }
@@ -1508,6 +1846,10 @@ async function confirmCFImport(){
   if(skippedFrozen.length){
     setTimeout(()=> alert('No toqué estos meses porque están congelados 🔒:\n' + skippedFrozen.join('\n')), 200);
   }
+  await registerImport({
+    id:importId, tipo:'cashflow', archivo: filename, size: file ? file.size : 0, fecha: nowIso, usuario:USUARIO.nombre,
+    entidades:['spl','spotsline'], aplicado: applied, saltados: skippedFrozen, extra:{hojas}
+  }, file);
 }
 
 /* ============ SINCRONIZAR PANELES (Supabase, en vivo) ============ */
@@ -1679,14 +2021,18 @@ async function confirmSync(){
   const [yearStr, monthStr] = document.getElementById('syncMonthTarget').value.split('-');
   const year = Number(yearStr), month = Number(monthStr);
   const pick = (r, entity)=> entity==='spl' ? r.splFinal : r.spotslineFinal;
-  const skippedFrozen = [];
+  const importId = newImportId(), nowIso = new Date().toISOString();
+  const ctx = syncCtx;
+  const skippedFrozen = [], applied = [];
   for(const entity of ['spl','spotsline']){
     const d = await loadPeriod(entity, year, month);
     if(d.frozen){ skippedFrozen.push(`${entity==='spl'?'SPL':'Spotsline'} ${MESES[month]} ${year}`); continue; }
-    d.values['deudores_venta'] = pick(syncCtx.deudores, entity);
-    d.meta['deudores_venta'] = {source:'panel', filename:'Panel de Cobranzas (Supabase)', updatedAt:new Date().toISOString()};
-    d.values['proveedores_loc'] = pick(syncCtx.provLoc, entity);
-    d.meta['proveedores_loc'] = {source:'panel', filename:'Panel de Proveedores (Supabase)', updatedAt:new Date().toISOString()};
+    const vDeu = pick(ctx.deudores, entity), vProv = pick(ctx.provLoc, entity);
+    d.values['deudores_venta'] = vDeu;
+    d.meta['deudores_venta'] = {source:'panel', importId, filename:'Panel de Cobranzas (Supabase)', updatedAt:nowIso};
+    d.values['proveedores_loc'] = vProv;
+    d.meta['proveedores_loc'] = {source:'panel', importId, filename:'Panel de Proveedores (Supabase)', updatedAt:nowIso};
+    applied.push({e:entity, y:year, m:month, f:'deudores_venta', v:vDeu}, {e:entity, y:year, m:month, f:'proveedores_loc', v:vProv});
     await savePeriod(entity, year, month, d);
   }
   closeModal();
@@ -1694,6 +2040,11 @@ async function confirmSync(){
   if(skippedFrozen.length){
     setTimeout(()=> alert('No toqué estos meses porque están congelados 🔒:\n' + skippedFrozen.join('\n')), 200);
   }
+  await registerImport({
+    id:importId, tipo:'paneles', archivo:'Paneles de Cobranzas y Proveedores (Supabase)', size:0, fecha: nowIso, usuario:USUARIO.nombre,
+    entidades:['spl','spotsline'], aplicado: applied, saltados: skippedFrozen,
+    extra:{filas:`${ctx.deudores.rowCount} clientes · ${ctx.provLoc.rowCount} proveedores`}
+  }, null);
 }
 
 /* ============ TIPO DE CAMBIO OFICIAL DE HOY (API pública) ============ */
@@ -1889,7 +2240,7 @@ function parseDeudasArcaSheet(workbook, monthKeys){
     const intres = Number(g(col.intres)) || 0;
     const intpun = Number(g(col.intpun)) || 0;
     const total = Number(g(col.total)) || 0;
-    items[empresa].push({empresa, venc, saldo, intereses: intres+intpun, total, impuesto: g(col.impuesto)||'', concepto: g(col.concepto)||''});
+    items[empresa].push({empresa, venc, vencimiento: venc, saldo, intereses: intres+intpun, total, impuesto: g(col.impuesto)||'', concepto: g(col.concepto)||''});
   }
   // Es una foto de "hoy": no hay Fecha de Pago para reconstruir meses pasados, así que se aplica
   // solo al mes más reciente del Cash Flow (el último de monthKeys) — los anteriores quedan a cargar a mano.
@@ -2613,13 +2964,19 @@ function handleBackupFile(e){
 }
 
 async function confirmBackupImport(){
+  if(!PERM.backup) return sinPermiso('restaurar backups');
   const entries = Object.entries(backupCtx.data);
   let ok=0, fail=0;
   for(const [k,v] of entries){
-    try{ await Store.set(k, v); cache[k] = JSON.parse(v); ok++; }
+    let antes = null; try{ antes = persistido[k] ? JSON.parse(persistido[k]) : JSON.parse(((await Store.get(k))||{}).value||'null'); }catch(e){}
+    try{ await Store.set(k, v); cache[k] = JSON.parse(v); persistido[k] = v; ok++;
+      const pk = k.match(/^sitpat:(\w+):(\d+):(\d+)$/);
+      if(pk) anotarCambios(pk[1], Number(pk[2]), Number(pk[3]), diffPeriodo(antes, cache[k]), 'Restaurar backup');
+    }
     catch(e){ fail++; }
   }
   pedidosLoaded = false; await loadPedidos(); refreshPedidosBadge();
+  importLogLoaded = false; await loadImportLog(); refreshArchivosBadge();
   closeModal();
   renderAll();
   alert(`Restaurado: ${ok} período(s)${fail?`, ${fail} con error`:''}.`);
@@ -2866,6 +3223,381 @@ async function applyPastedResponse(){
   res.innerHTML = `<div class="ped-result">${cerrados.length ? `✔ Cerré ${cerrados.length} pedido(s): <b>${fmt(cerrados)}</b>.` : 'No cerré ningún pedido.'}${yaCerrados.length ? `<br>Ya estaban cerrados: ${fmt(yaCerrados)}.` : ''}${noExiste.length ? `<br>No encontré en el panel: ${fmt(noExiste)}.` : ''}</div>`;
 }
 
+/* ============ ARCHIVOS CARGADOS (historial de cargas + copia del archivo original) ============ */
+const IMPORTLOG_KEY = 'importlog:archivos';
+let importLog = {items:[]};
+let importLogLoaded = false;
+const TIPO_CARGA = {
+  cashflow:{label:'Cash Flow', cls:'cashflow'},
+  stock:{label:'Stock', cls:'archivo'},
+  paneles:{label:'Paneles', cls:'panel'}
+};
+
+function newImportId(){ return 'i'+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+
+async function loadImportLog(){
+  if(importLogLoaded) return importLog;
+  try{
+    const r = await Store.get(IMPORTLOG_KEY);
+    if(r){ const d = JSON.parse(r.value); if(d && Array.isArray(d.items)) importLog = {items:d.items}; }
+  }catch(e){ /* sin registro o ilegible: arranca vacío */ }
+  importLogLoaded = true;
+  return importLog;
+}
+async function saveImportLog(){
+  await Store.set(IMPORTLOG_KEY, JSON.stringify(importLog));
+  refreshArchivosBadge();
+}
+function refreshArchivosBadge(){
+  const el = document.getElementById('archivosCount');
+  if(el) el.textContent = importLog.items.length ? `(${importLog.items.length})` : '';
+}
+
+/* ---- copia del archivo original: IndexedDB (cabe mucho más que localStorage) ---- */
+const FileDB = {
+  _db:null,
+  open(){
+    return new Promise((res,rej)=>{
+      if(this._db) return res(this._db);
+      if(typeof indexedDB==='undefined') return rej(new Error('IndexedDB no disponible'));
+      const r = indexedDB.open('sitpat_archivos', 1);
+      r.onupgradeneeded = ()=>{ r.result.createObjectStore('files'); };
+      r.onsuccess = ()=>{ this._db = r.result; res(this._db); };
+      r.onerror = ()=> rej(r.error || new Error('No se pudo abrir IndexedDB'));
+    });
+  },
+  async put(id, rec){
+    const db = await this.open();
+    return new Promise((res,rej)=>{
+      const tx = db.transaction('files','readwrite');
+      tx.objectStore('files').put(rec, id);
+      tx.oncomplete = ()=> res(true);
+      tx.onerror = ()=> rej(tx.error);
+      tx.onabort = ()=> rej(tx.error || new Error('Operación cancelada'));
+    });
+  },
+  async get(id){
+    const db = await this.open();
+    return new Promise((res,rej)=>{
+      const rq = db.transaction('files','readonly').objectStore('files').get(id);
+      rq.onsuccess = ()=> res(rq.result || null);
+      rq.onerror = ()=> rej(rq.error);
+    });
+  },
+  async del(id){
+    const db = await this.open();
+    return new Promise((res,rej)=>{
+      const tx = db.transaction('files','readwrite');
+      tx.objectStore('files').delete(id);
+      tx.oncomplete = ()=> res(true);
+      tx.onerror = ()=> rej(tx.error);
+    });
+  }
+};
+function fileToArrayBuffer(file){
+  if(file.arrayBuffer) return file.arrayBuffer();
+  return new Promise((res,rej)=>{ const fr = new FileReader(); fr.onload = ()=>res(fr.result); fr.onerror = ()=>rej(fr.error); fr.readAsArrayBuffer(file); });
+}
+
+// Registra una carga (y guarda la copia del archivo si hay). Nunca debe frenar la carga de datos: si falla, solo avisa por consola.
+async function registerImport(rec, file){
+  try{
+    await loadImportLog();
+    rec.tieneOriginal = false;
+    if(file){
+      try{
+        const data = await fileToArrayBuffer(file);
+        await FileDB.put(rec.id, {name:file.name, type:file.type||'', size:file.size, data});
+        rec.tieneOriginal = true;
+      }catch(e){ console.warn('No se pudo guardar la copia del archivo', e); }
+    }
+    importLog.items.push(rec);
+    await saveImportLog();
+  }catch(e){ console.warn('No se pudo registrar la carga', e); }
+}
+
+/* ---- helpers de presentación ---- */
+function fieldName(fid, unit){
+  const f = ALL_FIELDS.find(x=>x.id===fid);
+  let n = f ? f.label : fid;
+  if(/_cte$/.test(fid)) n += ' · Corriente'; else if(/_nocte$/.test(fid)) n += ' · No corriente';
+  if(unit==='USD') n += ' (USD)';
+  return n;
+}
+function fieldOrder(fid){ const i = ALL_FIELDS.findIndex(x=>x.id===fid); return i<0 ? 999 : i; }
+function entName(e){ return e==='spl' ? 'SPL' : (e==='spotsline' ? 'Spotsline' : e); }
+function fmtFechaHora(iso){
+  try{ return new Date(iso).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}); }
+  catch(e){ return ''; }
+}
+function fmtSize(b){ b = Number(b)||0; return b>=1048576 ? (b/1048576).toFixed(1)+' MB' : (b>=1024 ? Math.round(b/1024)+' KB' : b+' B'); }
+function fmtDateAny(v){
+  if(!v) return '';
+  const d = (v instanceof Date) ? v : new Date(v);
+  return isNaN(d) ? '' : d.toLocaleDateString('es-AR');
+}
+function periodsOf(rec){
+  return [...new Set((rec.aplicado||[]).map(a=>a.y*100+a.m))].sort((a,b)=>a-b);
+}
+function alcanceTexto(rec){
+  const ents = (rec.entidades||[]).map(entName).join(' y ') || '—';
+  const ps = periodsOf(rec);
+  if(!ps.length) return `${ents} · sin datos`;
+  const lab = ym=> `${MESES[ym%100]} ${Math.floor(ym/100)}`;
+  const first = ps[0], last = ps[ps.length-1];
+  if(ps.length===1) return `${ents} · ${lab(first)}`;
+  const sameYear = Math.floor(first/100)===Math.floor(last/100);
+  return `${ents} · ${sameYear ? MESES[first%100].slice(0,3)+' – '+MESES[last%100].slice(0,3)+' '+Math.floor(first/100) : lab(first)+' – '+lab(last)}`;
+}
+
+/* ---- pantalla: lista de cargas ---- */
+async function openArchivosModal(){
+  await loadImportLog();
+  document.getElementById('modal').style.width = '1000px';
+  renderArchivosList();
+  document.getElementById('overlay').classList.add('show');
+}
+
+function renderArchivosList(){
+  const items = importLog.items.slice().sort((a,b)=> String(b.fecha).localeCompare(String(a.fecha)));
+  const rows = items.map(r=>{
+    const t = TIPO_CARGA[r.tipo] || {label:r.tipo, cls:'manual'};
+    return `<tr>
+      <td>${fmtFechaHora(r.fecha)}</td>
+      <td><span class="badge ${t.cls}">${t.label}</span></td>
+      <td class="arch-name"><b>${escHtml(r.archivo)}</b><div class="arch-sub">${r.size ? fmtSize(r.size)+' · ' : ''}${r.tieneOriginal ? 'copia guardada' : (r.tipo==='paneles' ? 'datos en vivo, sin archivo' : 'sin copia del archivo')}</div></td>
+      <td class="arch-name">${escHtml(alcanceTexto(r))}</td>
+      <td style="text-align:right">${(r.aplicado||[]).length}</td>
+      <td class="arch-actions">
+        <button class="ped-mini" data-arch-act="ver" data-arch-id="${r.id}">Ver</button>
+        ${r.tieneOriginal && PERM.exportar ? `<button class="ped-mini" data-arch-act="orig" data-arch-id="${r.id}" title="Descargar el archivo original">⬇ Original</button>` : ''}
+        ${PERM.exportar ? `<button class="ped-mini" data-arch-act="datos" data-arch-id="${r.id}" title="Descargar en Excel los datos que tomó el panel">⬇ Datos</button>` : ''}
+        ${PERM.importar ? `<button class="ped-mini" data-arch-act="del" data-arch-id="${r.id}" title="Borrar este registro">🗑</button>` : ''}
+      </td></tr>`;
+  }).join('');
+  document.getElementById('modal').innerHTML = `
+    <div class="ped-head"><h3>Archivos cargados</h3><button class="ped-close" id="archClose">Cerrar</button></div>
+    <div class="desc">Cada archivo que subís (y cada sincronización de paneles) queda registrado acá: podés ver qué datos tomó el panel, abrir el contenido del archivo y descargar el original o los datos en Excel. Se registran las cargas hechas a partir de ahora.</div>
+    ${items.length ? `<div class="arch-wrap"><table class="arch-table"><thead><tr><th>Fecha</th><th>Tipo</th><th>Archivo</th><th>Alcance</th><th style="text-align:right">Valores</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`
+                   : '<div class="ped-empty">Todavía no hay cargas registradas. Cuando subas un Cash Flow o un reporte de stock, o sincronices los paneles, va a aparecer acá.</div>'}`;
+  document.getElementById('archClose').addEventListener('click', closeModal);
+  document.querySelectorAll('[data-arch-act]').forEach(b=> b.addEventListener('click', ()=> archivoAction(b.dataset.archAct, b.dataset.archId)));
+}
+
+async function archivoAction(act, id){
+  if(act==='ver') return renderArchivoDetalle(id, 'datos');
+  if(act==='orig') return descargarOriginal(id);
+  if(act==='datos') return descargarDatos(id);
+  if(act==='del'){
+    const r = importLog.items.find(x=>x.id===id); if(!r) return;
+    if(!confirm(`¿Borrar el registro de "${r.archivo}"?\n\nSe borra solo el registro y la copia guardada del archivo. Los datos que ya se cargaron en el panel no se tocan.`)) return;
+    importLog.items = importLog.items.filter(x=>x.id!==id);
+    try{ await FileDB.del(id); }catch(e){ /* si no había copia, no pasa nada */ }
+    await saveImportLog();
+    renderArchivosList();
+  }
+}
+
+/* ---- pantalla: detalle de una carga ---- */
+function datosCargadosHtml(r){
+  const ap = r.aplicado || [];
+  if(!ap.length) return '<div class="ped-empty">Esta carga no registró valores.</div>';
+  const periods = periodsOf(r);
+  const multiYear = Math.floor(periods[0]/100) !== Math.floor(periods[periods.length-1]/100);
+  const head = periods.map(ym=> `<th style="text-align:right">${MESES[ym%100].slice(0,3)}${multiYear ? ' '+String(Math.floor(ym/100)).slice(2) : ''}</th>`).join('');
+  return ['spl','spotsline'].map(e=>{
+    const sub = ap.filter(a=>a.e===e);
+    if(!sub.length) return '';
+    const fields = [...new Set(sub.map(a=>a.f))].sort((a,b)=> fieldOrder(a)-fieldOrder(b));
+    const body = fields.map(f=>{
+      const unit = (sub.find(a=>a.f===f)||{}).u;
+      const cells = periods.map(ym=>{
+        const a = sub.find(x=> x.f===f && x.y*100+x.m===ym);
+        if(!a) return '<td style="text-align:right;color:var(--text3)">—</td>';
+        return `<td style="text-align:right">${a.u==='USD' ? 'US$ '+Math.round(a.v).toLocaleString('es-AR') : fmtMoney(a.v)}</td>`;
+      }).join('');
+      return `<tr><td>${escHtml(fieldName(f, unit))}</td>${cells}</tr>`;
+    }).join('');
+    return `<h4 class="arch-h4">${entName(e)}</h4><div class="arch-wrap"><table class="arch-table"><thead><tr><th>Rubro</th>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+  }).join('');
+}
+
+function renderArchivoDetalle(id, tab){
+  const r = importLog.items.find(x=>x.id===id);
+  if(!r){ renderArchivosList(); return; }
+  const t = TIPO_CARGA[r.tipo] || {label:r.tipo, cls:'manual'};
+  document.getElementById('modal').innerHTML = `
+    <div class="ped-head"><h3>${escHtml(r.archivo)}</h3><button class="ped-close" id="archBack">← Volver a la lista</button></div>
+    <div class="arch-meta">
+      <span class="badge ${t.cls}">${t.label}</span>
+      <span>${fmtFechaHora(r.fecha)}</span><span>·</span><span>${escHtml(alcanceTexto(r))}</span>
+      ${r.size ? `<span>·</span><span>${fmtSize(r.size)}</span>` : ''}
+      ${r.extra && r.extra.columna ? `<span>·</span><span>columna sumada: <b>${escHtml(r.extra.columna)}</b> (${r.extra.filas} filas)</span>` : ''}
+    </div>
+    ${(r.saltados||[]).length ? `<div class="desc" style="color:var(--orange)">No se aplicó a estos meses porque estaban congelados 🔒: ${escHtml(r.saltados.join(', '))}.</div>` : ''}
+    <div class="ped-actions">
+      ${r.tieneOriginal ? '<button class="btn" id="archDlOrig">⬇ Descargar archivo original</button>' : ''}
+      <button class="btn" id="archDlDatos">⬇ Descargar datos cargados (Excel)</button>
+    </div>
+    <div class="ped-tabs">
+      <button class="ped-tab ${tab==='datos'?'active':''}" data-arch-tab="datos">Datos cargados en el panel</button>
+      ${r.tipo!=='paneles' ? `<button class="ped-tab ${tab==='contenido'?'active':''}" data-arch-tab="contenido">Contenido del archivo</button>` : ''}
+    </div>
+    <div id="archBody"></div>`;
+  document.getElementById('archBack').addEventListener('click', renderArchivosList);
+  const o = document.getElementById('archDlOrig'); if(o) o.addEventListener('click', ()=> descargarOriginal(id));
+  document.getElementById('archDlDatos').addEventListener('click', ()=> descargarDatos(id));
+  document.querySelectorAll('[data-arch-tab]').forEach(b=> b.addEventListener('click', ()=> renderArchivoDetalle(id, b.dataset.archTab)));
+  if(tab==='contenido') renderArchivoContenido(r);
+  else document.getElementById('archBody').innerHTML = datosCargadosHtml(r);
+}
+
+function fmtCell(v){
+  if(v instanceof Date) return fmtDateAny(v);
+  if(typeof v==='number'){
+    if(Number.isInteger(v)) return Math.abs(v) < 10000 ? String(v) : v.toLocaleString('es-AR'); // años, tipo de cambio, códigos: sin punto de miles
+    return v.toLocaleString('es-AR',{maximumFractionDigits:2});
+  }
+  return escHtml(v);
+}
+async function renderArchivoContenido(r){
+  const box = document.getElementById('archBody');
+  if(!r.tieneOriginal){ box.innerHTML = '<div class="ped-empty">No hay una copia guardada de este archivo, así que no puedo mostrar su contenido. Podés ver igual los datos que tomó el panel en la otra pestaña.</div>'; return; }
+  box.innerHTML = '<div class="ped-empty">Abriendo el archivo…</div>';
+  let rec = null;
+  try{ rec = await FileDB.get(r.id); }catch(e){ /* se informa abajo */ }
+  if(!rec){ box.innerHTML = '<div class="ped-empty">No pude recuperar la copia guardada (puede que se hayan borrado los datos del navegador).</div>'; return; }
+  if(typeof XLSX==='undefined' || !XLSX.read){ box.innerHTML = '<div class="ped-empty">No se pudo cargar el lector de Excel (¿sin conexión?). Descargá el archivo original para abrirlo.</div>'; return; }
+  let wb;
+  try{ wb = XLSX.read(new Uint8Array(rec.data), {type:'array', cellDates:true}); }
+  catch(e){ box.innerHTML = `<div class="ped-empty">No pude leer el archivo: ${escHtml(e.message)}</div>`; return; }
+  const used = new Set((r.extra && r.extra.hojas) || []);
+  const names = wb.SheetNames;
+  const first = names.find(n=>used.has(n)) || names[0];
+  box.innerHTML = `
+    <div class="desc">${used.size ? 'Las hojas con ★ son las que usa el panel. ' : ''}Se muestran las primeras 300 filas y 40 columnas de cada hoja; para verla completa, descargá el original.</div>
+    <select id="archSheetSel" style="width:340px">${names.map(n=>`<option value="${escHtml(n)}" ${n===first?'selected':''}>${used.has(n)?'★ ':''}${escHtml(n)}</option>`).join('')}</select>
+    <div id="archSheet"></div>`;
+  const show = ()=>{
+    const ws = wb.Sheets[document.getElementById('archSheetSel').value];
+    const aoa = XLSX.utils.sheet_to_json(ws, {header:1, raw:true, defval:''});
+    const maxR = 300, maxC = 40;
+    const view = aoa.slice(0, maxR);
+    const cols = Math.min(maxC, view.reduce((a,row)=>Math.max(a,row.length),0));
+    const body = view.map((row,i)=> `<tr><td class="rn">${i+1}</td>${Array.from({length:cols},(_,c)=>`<td>${fmtCell(row[c]===undefined?'':row[c])}</td>`).join('')}</tr>`).join('');
+    const note = aoa.length>maxR ? `<div class="arch-sub">Mostrando ${maxR} de ${aoa.length.toLocaleString('es-AR')} filas.</div>` : '';
+    document.getElementById('archSheet').innerHTML = aoa.length
+      ? `<div class="arch-gridwrap"><table class="arch-grid"><tbody>${body}</tbody></table></div>${note}`
+      : '<div class="ped-empty">Esta hoja está vacía.</div>';
+  };
+  document.getElementById('archSheetSel').addEventListener('change', show);
+  show();
+}
+
+/* ---- descargas ---- */
+async function descargarOriginal(id){
+  const r = importLog.items.find(x=>x.id===id);
+  let rec = null;
+  try{ rec = await FileDB.get(id); }catch(e){ /* se informa abajo */ }
+  if(!rec){ alert('No encontré la copia guardada de este archivo (puede que se hayan borrado los datos del navegador).'); return; }
+  downloadBlob(new Blob([rec.data], {type: rec.type || 'application/octet-stream'}), rec.name || (r && r.archivo) || 'archivo');
+}
+
+// Detalle (cuotas, facturas, etc.) que hoy sigue en el panel y vino de esta carga
+async function itemsDeCarga(id){
+  const out = [];
+  const keys = ((await Store.list('sitpat:')).keys) || [];
+  for(const k of keys){
+    const m = k.match(/^sitpat:(spl|spotsline):(\d+):(\d+)$/);
+    if(!m) continue;
+    const d = await loadPeriod(m[1], Number(m[2]), Number(m[3]));
+    Object.keys(d.meta||{}).forEach(fid=>{
+      const mt = d.meta[fid];
+      if(mt && mt.importId===id && Array.isArray(mt.items)) mt.items.forEach(i=> out.push({e:m[1], y:Number(m[2]), m:Number(m[3]), f:fid, i}));
+    });
+  }
+  return out;
+}
+
+async function descargarDatos(id){
+  const r = importLog.items.find(x=>x.id===id);
+  if(!r) return;
+  if(typeof XLSX==='undefined' || !XLSX.utils){ alert('No se pudo cargar el generador de Excel (¿sin conexión?).'); return; }
+  const wb = XLSX.utils.book_new();
+  const info = [
+    ['Archivo', r.archivo], ['Tipo', (TIPO_CARGA[r.tipo]||{}).label || r.tipo], ['Fecha de carga', fmtFechaHora(r.fecha)],
+    ['Alcance', alcanceTexto(r)], ['Tamaño', r.size ? fmtSize(r.size) : '—'],
+    ['Hojas que usa el panel', ((r.extra&&r.extra.hojas)||[]).join(', ') || '—'],
+    ['Meses no aplicados (congelados)', (r.saltados||[]).join(', ') || 'ninguno']
+  ];
+  const wsI = XLSX.utils.aoa_to_sheet(info); wsI['!cols'] = [{wch:32},{wch:70}];
+  XLSX.utils.book_append_sheet(wb, wsI, 'Archivo');
+
+  const resumen = [['Empresa','Año','Mes','Rubro','Valor','Unidad']];
+  (r.aplicado||[]).slice().sort((a,b)=> (a.e<b.e?-1:a.e>b.e?1:0) || (a.y*100+a.m)-(b.y*100+b.m) || fieldOrder(a.f)-fieldOrder(b.f))
+    .forEach(a=> resumen.push([entName(a.e), a.y, MESES[a.m], fieldName(a.f), Math.round(a.v*100)/100, a.u==='USD' ? 'USD' : 'ARS']));
+  const wsR = XLSX.utils.aoa_to_sheet(resumen); wsR['!cols'] = [{wch:11},{wch:7},{wch:13},{wch:38},{wch:18},{wch:8}];
+  XLSX.utils.book_append_sheet(wb, wsR, 'Datos cargados');
+
+  const items = await itemsDeCarga(id);
+  if(items.length){
+    const det = [['Empresa','Año','Mes','Rubro','Proveedor / Banco / Plan','Concepto','Vencimiento','Capital','Intereses','Total']];
+    items.sort((a,b)=> (a.e<b.e?-1:a.e>b.e?1:0) || (a.y*100+a.m)-(b.y*100+b.m) || fieldOrder(a.f)-fieldOrder(b.f))
+      .forEach(({e,y,m,f,i})=> det.push([entName(e), y, MESES[m], fieldName(f), i.impuesto||'', i.concepto||'', fmtDateAny(i.vencimiento||i.venc), Math.round((i.saldo||0)*100)/100, Math.round((i.intereses||0)*100)/100, Math.round((i.total||0)*100)/100]));
+    const wsD = XLSX.utils.aoa_to_sheet(det); wsD['!cols'] = [{wch:11},{wch:7},{wch:13},{wch:36},{wch:34},{wch:26},{wch:13},{wch:16},{wch:14},{wch:16}];
+    XLSX.utils.book_append_sheet(wb, wsD, 'Detalle (estado actual)');
+  }
+  const out = XLSX.write(wb, {type:'array', bookType:'xlsx'});
+  const base = String(r.archivo).replace(/\.[^.]+$/,'').replace(/[^\w\-]+/g,'_').slice(0,50);
+  downloadBlob(new Blob([out], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}), `datos_cargados_${base}.xlsx`);
+}
+
+/* ============ REGISTRO DE CAMBIOS (pantalla) ============ */
+let regDatos = [];
+async function openRegistroModal(){
+  if(!PERM.registro) return sinPermiso('ver el registro de cambios');
+  document.getElementById('modal').style.width = '1100px';
+  document.getElementById('modal').innerHTML = `<span class="close-x" id="closeXReg">&times;</span><h3>Registro de cambios</h3>
+    <div class="desc">Cada valor que se carga o corrige queda anotado con quién, cuándo, el valor anterior y el nuevo. Incluye cargas de Cash Flow, stock, paneles, congelar meses y notas.</div>
+    <div id="regBody"><div class="desc">Cargando…</div></div>`;
+  document.getElementById('overlay').classList.add('show');
+  document.getElementById('closeXReg').addEventListener('click', closeModal);
+  try{ await enviarRegistro(); regDatos = await leerRegistro(1000); }
+  catch(e){ document.getElementById('regBody').innerHTML = `<div class="desc" style="color:var(--red)">No se pudo leer el registro: ${escAttr(e.message)}</div>`; return; }
+  pintarRegistro();
+}
+function pintarRegistro(filtros){
+  const f = filtros || {e:'', u:'', q:''};
+  const usuarios = [...new Set(regDatos.map(r=>r.por).filter(Boolean))].sort();
+  const lista = regDatos.filter(r=> (!f.e || r.e===f.e) && (!f.u || r.por===f.u) && (!f.q || (etiquetaCampo(r.c)+' '+r.o).toLowerCase().includes(f.q.toLowerCase())));
+  const val = (r, v)=> (r.c==='__frozen'||r.c==='__comentario') ? escAttr(v==null?'—':v) : (v==null ? '—' : (r.c==='tipo_cambio' ? Number(v).toLocaleString('es-AR') : fmtMoney(v)));
+  const opt = (v,l,s)=>`<option value="${escAttr(v)}" ${s===v?'selected':''}>${escAttr(l)}</option>`;
+  document.getElementById('regBody').innerHTML = `
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0">
+      <select id="regE" style="width:auto">${opt('','Todas las empresas',f.e)}${opt('spl','SPL',f.e)}${opt('spotsline','Spotsline',f.e)}</select>
+      <select id="regU" style="width:auto">${opt('','Todos los usuarios',f.u)}${usuarios.map(u=>opt(u,u,f.u)).join('')}</select>
+      <input id="regQ" type="text" placeholder="Buscar rubro u origen…" value="${escAttr(f.q)}" style="flex:1;min-width:160px">
+      ${PERM.exportar ? '<button class="btn" id="regXls">⬇ Excel</button>' : ''}
+    </div>
+    <div class="desc">${lista.length} cambio(s)${regDatos.length>=1000?' · se muestran los más recientes':''}.</div>
+    <div class="arch-gridwrap" style="max-height:60vh"><table class="arch-table"><thead><tr><th>Fecha</th><th>Usuario</th><th>Empresa</th><th>Mes</th><th>Rubro</th><th style="text-align:right">Antes</th><th style="text-align:right">Después</th><th>Origen</th></tr></thead>
+    <tbody>${lista.slice(0,1500).map(r=>`<tr><td>${fmtFechaHora(r.en)}</td><td>${escAttr(r.por)}</td><td>${entName(r.e)}</td><td>${MESES[r.m]?MESES[r.m].slice(0,3)+' '+r.y:''}</td><td class="arch-name">${escAttr(etiquetaCampo(r.c))}</td><td style="text-align:right;font-family:var(--mono)">${val(r,r.a)}</td><td style="text-align:right;font-family:var(--mono)">${val(r,r.d)}</td><td class="arch-name">${escAttr(r.o)}</td></tr>`).join('') || '<tr><td colspan="8" style="color:var(--text3)">Todavía no hay cambios registrados.</td></tr>'}</tbody></table></div>`;
+  const leer = ()=>({e:document.getElementById('regE').value, u:document.getElementById('regU').value, q:document.getElementById('regQ').value});
+  document.getElementById('regE').addEventListener('change', ()=>pintarRegistro(leer()));
+  document.getElementById('regU').addEventListener('change', ()=>pintarRegistro(leer()));
+  document.getElementById('regQ').addEventListener('change', ()=>pintarRegistro(leer()));
+  const x = document.getElementById('regXls');
+  if(x) x.addEventListener('click', ()=>{
+    const aoa = [['Fecha','Usuario','Empresa','Año','Mes','Rubro','Antes','Después','Origen']].concat(lista.map(r=>[
+      new Date(r.en), r.por, entName(r.e), r.y, MESES[r.m]||'', etiquetaCampo(r.c), r.a, r.d, r.o]));
+    const wb = XLSX.utils.book_new(); const ws = XLSX.utils.aoa_to_sheet(aoa, {cellDates:true});
+    ws['!cols'] = [{wch:18},{wch:22},{wch:10},{wch:6},{wch:11},{wch:38},{wch:16},{wch:16},{wch:34}];
+    XLSX.utils.book_append_sheet(wb, ws, 'Registro');
+    const out = XLSX.write(wb, {type:'array', bookType:'xlsx'});
+    downloadBlob(new Blob([out], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}), 'registro_cambios_patrimonial.xlsx');
+  });
+}
+
 /* ============ INIT ============ */
 document.getElementById('btnMeta').addEventListener('click', openMetaModal);
 document.getElementById('btnImportCF').addEventListener('click', openImportCFModal);
@@ -2875,9 +3607,12 @@ document.getElementById('btnExport').addEventListener('click', exportAllData);
 document.getElementById('btnImportBackup').addEventListener('click', openImportBackupModal);
 document.getElementById('btnPedidos').addEventListener('click', openPedidosModal);
 loadPedidos().then(refreshPedidosBadge);
+document.getElementById('btnArchivos').addEventListener('click', openArchivosModal);
+loadImportLog().then(refreshArchivosBadge);
 document.getElementById('btnExportExcel').addEventListener('click', exportExcel);
 document.getElementById('btnExportPdf').addEventListener('click', exportPdf);
-renderAll();
+document.getElementById('btnRegistro').addEventListener('click', openRegistroModal);
+cargarAcceso().then(()=>{ aplicarPermisosUI(); renderAll(); });
 </script>
 </body>
 </html>
