@@ -442,8 +442,8 @@ const SEED_CASHFLOW = {
   }
 };
 const SEED_USD = { // Moneda Extranjera, en dólares, tal como está en la hoja Caja y Bancos
-  spotsline: { 5:37522.87, 6:31454.16, 7:75998.81, 8:65952.43 },
-  spl:       { 5:6900.00,  6:6900.00,  7:6900.00,  8:6900.00  }
+  spotsline: { 5:37522.87, 6:31454.16, 7:75998.81, 8:65152.43 },
+  spl:       { 5:6900.00,  6:6900.00,  7:1900.00,  8:1900.00  } // ago/sep: PETO y Federico se dejaron de cargar el 13/08
 };
 // Dólares Comex: en USD, confirmado a mano (foto de set-2026).
 const SEED_USD_COMEX = { spotsline: { 8:106070 }, spl: { 8:94775 } };
@@ -1586,7 +1586,7 @@ const METODOLOGIA = [
     ['Plegar secciones', 'Tocá el título de una sección (Activo Corriente, Pasivo No Corriente, etc.) para ocultar sus rubros y dejar solo el total, igual que los bloques del Estado de resultados. Volvé a tocarlo para abrirla. El filtro y las secciones plegadas se recuerdan en tu navegador.']
   ]},
   {group:'Activo Corriente', items:[
-    ['Caja y Bancos', 'Se importa desde la hoja "Caja y Bancos" del Cash Flow: para cada mes se toma el saldo del último día con datos, arrastrando hacia adelante el último valor cargado en los días sin movimiento (fines de semana, etc).'],
+    ['Caja y Bancos', 'Se importa desde la hoja "Caja y Bancos" del Cash Flow. Para cada mes se toma el <b>día de cierre</b>: el último día del mes con saldos cargados (la mayoría de las filas con número; columnas con texto o anotaciones sueltas no cuentan). Se suma el saldo de cada fila ese día exacto; una fila vacía ese día vale 0 — ya no se arrastra el último valor de meses anteriores. La vista previa muestra la fecha de cierre de cada mes y avisa qué filas estaban vacías al cierre pero tenían saldo antes en el mes. Los meses sin ningún día cargado no se importan. Lo mismo vale para Valores en cartera y Moneda Extranjera.'],
     ['Valores en cartera', 'Igual método que Caja y Bancos, sumando las filas de tipo "Cheques de terceros" de esa misma hoja.'],
     ['Deudores por venta', 'Se consulta en vivo el panel de Cobranzas (tabla "clientes" en Supabase) al apretar "Sincronizar Paneles": suma el campo deuda de las filas de la empresa correspondiente más las marcadas "Ambas".'],
     ['Producto terminado', 'Archivo: En Odoo, elegí la empresa (SPL o Spotsline) → <b>Inventario</b> → <b>Reportes</b> → <b>Existencias</b> → seleccioná todo → <b>Exportar</b>. Después aplicá el filtro <b>Situación patrimonial</b> y exportá de nuevo: ese Excel es el que se sube acá, uno por empresa. Se sube el reporte de stock del sistema (Variante de producto) por empresa. Para SPL se suma todo lo categorizado "Producto Terminado SPL", más Componente/Insumo SPL, Accesorios SPL e insumos de embalaje (SPL es distribuidora: compra y revende, todo el stock es producto terminado). Para Spotsline se suma "Producto Terminado / ..." (fabrica productos propios).'],
@@ -1673,29 +1673,46 @@ function parseCashFlowSheet(workbook){
       const v = cell ? cell.v : null;
       return (typeof v === 'number') ? v : null;
     });
-    dataRows.push({empresa, field, seq});
+    const concCell = ws[XLSX.utils.encode_cell({r, c:range.s.c+2})];
+    dataRows.push({empresa, field, seq, tipo: tipoCell ? String(tipoCell.v).trim() : '', concepto: concCell ? String(concCell.v).trim() : ''});
   }
   if(!dataRows.length) throw new Error('No encontré filas de Efectivo/Bancos/Cheques de terceros/Moneda Extranjera con una empresa reconocida (SPL o Spotsline).');
 
-  // forward-fill and bucket by month-end
-  const monthKeys = []; // {idx, year, month}
+  // CIERRE DE CADA MES = último día del mes con saldos cargados (día hábil con datos en la mayoría de las filas).
+  // Se toma el saldo de cada fila EXACTAMENTE ese día; si la fila está vacía ese día, vale 0.
+  // (Antes se arrastraba el último valor de cada fila para siempre: una cuenta que se dejó de completar
+  //  — p. ej. SPL "PETO" y "Federico" desde el 13/08 — seguía sumando meses después. 03/11/2026.)
+  // Las columnas con texto o con 1-2 celdas sueltas (anotaciones a futuro) no cuentan como día de cierre.
+  const isNum = v => typeof v === 'number' && !isNaN(v);
+  const cuenta = dateCols.map((dc,idx)=> dataRows.reduce((a,row)=> a + (isNum(row.seq[idx])?1:0), 0));
+  const maxCuenta = Math.max(...cuenta);
+  const minCierre = Math.max(1, Math.ceil(maxCuenta*0.5));
+  const monthKeys = []; // {idx, year, month, fecha} — solo meses que tienen un día de cierre cargado
   dateCols.forEach((dc,idx)=>{
+    if(cuenta[idx] < minCierre) return;
     const y = dc.date.getFullYear(), m = dc.date.getMonth();
     const existing = monthKeys.find(k=>k.year===y && k.month===m);
-    if(existing) existing.idx = idx; // keep last idx of that month
-    else monthKeys.push({idx, year:y, month:m});
+    if(existing){ existing.idx = idx; existing.fecha = dc.date; } // queda el último día cargado del mes
+    else monthKeys.push({idx, year:y, month:m, fecha: dc.date});
   });
+  if(!monthKeys.length) throw new Error('No encontré ningún día con saldos cargados en la hoja "'+sheetName+'".');
 
   const results = {}; // entity -> year -> month -> {caja_bancos,valores_cartera,moneda_extranjera}
   ['spl','spotsline'].forEach(e=>{ results[e]={}; });
+  const avisos = []; // filas vacías el día de cierre que sí tenían saldo antes en ese mes (se toman como 0)
 
   dataRows.forEach(row=>{
-    // forward fill sequence
-    const filled = [];
-    let last = 0;
-    row.seq.forEach(v=>{ if(v!==null && !isNaN(v)) last=v; filled.push(last); });
     monthKeys.forEach(mk=>{
-      const val = filled[mk.idx] || 0;
+      const v = row.seq[mk.idx];
+      const val = isNum(v) ? v : 0;
+      if(!isNum(v)){
+        // ¿tenía saldo antes dentro del mismo mes? -> avisar para que se vea en la vista previa
+        for(let i=mk.idx-1; i>=0; i--){
+          const d = dateCols[i].date;
+          if(d.getFullYear()!==mk.year || d.getMonth()!==mk.month) break;
+          if(isNum(row.seq[i])){ if(row.seq[i]!==0) avisos.push({empresa:row.empresa, field:row.field, tipo:row.tipo, concepto:row.concepto, year:mk.year, month:mk.month, cierre:mk.fecha, ultimo:row.seq[i], ultimoFecha:d}); break; }
+        }
+      }
       results[row.empresa][mk.year] = results[row.empresa][mk.year] || {};
       results[row.empresa][mk.year][mk.month] = results[row.empresa][mk.year][mk.month] || {caja_bancos:0, valores_cartera:0, moneda_extranjera:0};
       results[row.empresa][mk.year][mk.month][row.field] += val;
@@ -1746,7 +1763,7 @@ function parseCashFlowSheet(workbook){
     }
   }
 
-  return {sheetName, chPropiosSheet, monthKeys, results};
+  return {sheetName, chPropiosSheet, monthKeys, results, avisos};
 }
 
 let cfImportCtx = null;
@@ -1803,7 +1820,7 @@ function handleCFFile(e){
       const spl = (parsed.results.spl[mk.year]||{})[mk.month] || {};
       const spo = (parsed.results.spotsline[mk.year]||{})[mk.month] || {};
       return `<tr>
-        <td>${MESES[mk.month]} ${mk.year}</td>
+        <td>${MESES[mk.month]} ${mk.year}<br><span style="font-size:10.5px;color:var(--text3)">cierre ${mk.fecha.toLocaleDateString('es-AR')}</span></td>
         <td>${fmtMoney(spl.caja_bancos)}</td><td>${fmtMoney(spl.valores_cartera)}</td><td>US$${Math.round(spl.moneda_extranjera||0).toLocaleString('es-AR')}</td><td>${spl.cheques_emitidos!==undefined?fmtMoney(spl.cheques_emitidos):'—'}</td>
         <td>${fmtMoney(spo.caja_bancos)}</td><td>${fmtMoney(spo.valores_cartera)}</td><td>US$${Math.round(spo.moneda_extranjera||0).toLocaleString('es-AR')}</td><td>${spo.cheques_emitidos!==undefined?fmtMoney(spo.cheques_emitidos):'—'}</td>
       </tr>`;
@@ -1851,6 +1868,7 @@ function handleCFFile(e){
       <table><thead><tr><th>Mes</th><th colspan="4">SPL</th><th colspan="4">Spotsline</th></tr>
       <tr><th></th><th>Caja/Bancos</th><th>Valores cart.</th><th>Mon.Extr.(USD)</th><th>Cheq.Emit.</th><th>Caja/Bancos</th><th>Valores cart.</th><th>Mon.Extr.(USD)</th><th>Cheq.Emit.</th></tr></thead>
       <tbody>${rowsHtml}</tbody></table>
+      ${(parsed.avisos&&parsed.avisos.length) ? `<div class="desc" style="margin-top:10px;background:var(--bg3);border-left:3px solid var(--orange);padding:8px 10px;border-radius:6px"><b style="color:var(--orange)">Revisar — filas vacías el día de cierre (se toman como 0):</b><br>${parsed.avisos.map(a=>`${a.empresa==='spl'?'SPL':'Spotsline'} · ${MESES[a.month]} ${a.year} · ${escHtml(a.tipo)} "${escHtml(a.concepto)}": vacía el ${a.cierre.toLocaleDateString('es-AR')}, tenía ${a.field==='moneda_extranjera'?'US$ '+Math.round(a.ultimo).toLocaleString('es-AR'):fmtMoney(a.ultimo)} el ${a.ultimoFecha.toLocaleDateString('es-AR')}`).join('<br>')}<br>Si alguna sí tenía saldo al cierre, completala en el Cash Flow y volvé a importar.</div>` : ''}
       ${arcaHtml}
       ${planesHtml}
       ${creditosHtml}
