@@ -1586,6 +1586,7 @@ const METODOLOGIA = [
     ['Plegar secciones', 'Tocá el título de una sección (Activo Corriente, Pasivo No Corriente, etc.) para ocultar sus rubros y dejar solo el total, igual que los bloques del Estado de resultados. Volvé a tocarlo para abrirla. El filtro y las secciones plegadas se recuerdan en tu navegador.']
   ]},
   {group:'Activo Corriente', items:[
+    ['Importar Cash Flow: elegir rubros', 'Al subir el Cash Flow, arriba de la vista previa hay una casilla por rubro (Caja y Bancos, Valores en cartera, Moneda Extranjera, Cheques emitidos, Obligaciones Impositivas, Deudas fiscales, Deudas bancarias, Sueldos, Desvinculaciones, Otras deudas, Proveedores Exterior). Solo se actualizan los tildados; el resto queda como está, incluidas las correcciones manuales. "Todos" / "Ninguno" para marcar rápido. Los rubros cuya hoja no está en el archivo aparecen deshabilitados. Los meses congelados no se tocan nunca.'],
     ['Caja y Bancos', 'Se importa desde la hoja "Caja y Bancos" del Cash Flow. Para cada mes se toma el <b>día de cierre</b>: el último día del mes con saldos cargados (la mayoría de las filas con número; columnas con texto o anotaciones sueltas no cuentan). Se suma el saldo de cada fila ese día exacto; una fila vacía ese día vale 0 — ya no se arrastra el último valor de meses anteriores. La vista previa muestra la fecha de cierre de cada mes y avisa qué filas estaban vacías al cierre pero tenían saldo antes en el mes. Los meses sin ningún día cargado no se importan. Lo mismo vale para Valores en cartera y Moneda Extranjera.'],
     ['Valores en cartera', 'Igual método que Caja y Bancos, sumando las filas de tipo "Cheques de terceros" de esa misma hoja.'],
     ['Deudores por venta', 'Se consulta en vivo el panel de Cobranzas (tabla "clientes" en Supabase) al apretar "Sincronizar Paneles": suma el campo deuda de las filas de la empresa correspondiente más las marcadas "Ambas".'],
@@ -1865,6 +1866,7 @@ function handleCFFile(e){
 
     document.getElementById('cfBody').innerHTML = `
       <div class="desc">Hoja usada: <b>${parsed.sheetName}</b>${parsed.chPropiosSheet?` + <b>${parsed.chPropiosSheet}</b> (cheques emitidos)`:' · no encontré la hoja "Ch Propios", ese rubro no se va a actualizar'} · ${monthsSorted.length} meses encontrados. Esto va a reemplazar todos estos rubros, mes a mes, para las dos empresas (salvo Obligaciones Impositivas, que es puntual — ver abajo). Moneda Extranjera queda en <b>dólares</b> — se convierte a pesos con la fila de Tipo de Cambio. Proveedores Exterior ya viene en pesos (Saldo AR$). Las hojas de deuda en cuotas se recalculan para cada mes tomando lo que queda "de ese mes en adelante" (Fecha de Pago desde el inicio del mes), con Corriente/No Corriente según si el Vencimiento cae dentro de los 12 meses siguientes a ese mismo mes.</div>
+      ${cfSelectorHtml(cfImportCtx)}
       <table><thead><tr><th>Mes</th><th colspan="4">SPL</th><th colspan="4">Spotsline</th></tr>
       <tr><th></th><th>Caja/Bancos</th><th>Valores cart.</th><th>Mon.Extr.(USD)</th><th>Cheq.Emit.</th><th>Caja/Bancos</th><th>Valores cart.</th><th>Mon.Extr.(USD)</th><th>Cheq.Emit.</th></tr></thead>
       <tbody>${rowsHtml}</tbody></table>
@@ -1882,11 +1884,62 @@ function handleCFFile(e){
       </div>`;
     document.getElementById('cancelCF').addEventListener('click', closeModal);
     document.getElementById('confirmCF').addEventListener('click', confirmCFImport);
+    cfSelectorWire();
   };
   reader.readAsArrayBuffer(file);
 }
 
+/* ---- Elegir qué rubros actualizar al importar el Cash Flow ---- */
+function cfRubrosDisponibles(ctx){
+  const p = ctx.parsed;
+  return [
+    {k:'caja_bancos',      lbl:'Caja y Bancos',             hoja:'Caja y Bancos', ok:true},
+    {k:'valores_cartera',  lbl:'Valores en cartera',        hoja:'Caja y Bancos', ok:true},
+    {k:'moneda_extranjera',lbl:'Moneda Extranjera (USD)',   hoja:'Caja y Bancos', ok:true},
+    {k:'cheques_emitidos', lbl:'Cheques emitidos',          hoja:'Ch Propios', ok:!!p.chPropiosSheet},
+    {k:'oblig_impositivas',lbl:'Obligaciones Impositivas',  hoja:'Deudas ARCA', ok:!!ctx.arcaParsed},
+    {k:'deudas_fiscales',  lbl:'Deudas fiscales AFIP',      hoja:'Planes ARCA', ok:!!ctx.planesParsed},
+    {k:'deudas_bancarias', lbl:'Deudas bancarias',          hoja:'Créditos Bancarios', ok:!!ctx.creditosParsed},
+    {k:'sueldos',          lbl:'Sueldos y Jornales',        hoja:'Sueldos y CCSS', ok:!!ctx.sueldosParsed},
+    {k:'desvinculaciones', lbl:'Desvinculaciones',          hoja:'Desvinculaciones', ok:!!ctx.desvincParsed},
+    {k:'otras_deudas',     lbl:'Otras deudas',              hoja:'Planes de Pago', ok:!!ctx.otrasParsed},
+    {k:'proveedores_ext',  lbl:'Proveedores Exterior',      hoja:'DEUDA EXT', ok:!!ctx.deudaExtParsed}
+  ];
+}
+function cfSelectorHtml(ctx){
+  const rs = cfRubrosDisponibles(ctx);
+  return `<div style="margin:12px 0;background:var(--bg3);border:1px solid var(--border2);border-left:3px solid var(--yellow);border-radius:8px;padding:10px 12px">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+      <b style="color:var(--yellow);font-size:13px">¿Qué rubros querés actualizar?</b>
+      <span style="display:flex;gap:6px"><button class="btn" type="button" id="cfSelAll" style="padding:3px 10px;font-size:12px">Todos</button><button class="btn" type="button" id="cfSelNone" style="padding:3px 10px;font-size:12px">Ninguno</button></span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:4px 14px">
+      ${rs.map(r=>`<label style="display:flex;gap:7px;align-items:flex-start;font-size:12.5px;cursor:${r.ok?'pointer':'not-allowed'};opacity:${r.ok?1:.45}" title="${r.ok?'Hoja '+r.hoja:'No encontré la hoja '+r.hoja+' en este archivo'}">
+        <input type="checkbox" class="cf-rubro" value="${r.k}" ${r.ok?'checked':'disabled'} style="margin-top:2px">
+        <span>${r.lbl}<br><span style="font-size:10.5px;color:var(--text3)">${r.ok?'hoja '+r.hoja:'falta hoja '+r.hoja}</span></span></label>`).join('')}
+    </div>
+    <div class="desc" style="margin:8px 0 0;font-size:11.5px">Los rubros sin tildar no se tocan: quedan como están en el panel (incluidas las correcciones manuales).</div>
+  </div>`;
+}
+function cfRubrosElegidos(){
+  return new Set([...document.querySelectorAll('input.cf-rubro:checked')].map(x=>x.value));
+}
+function cfSelectorWire(){
+  const btn = document.getElementById('confirmCF');
+  const upd = ()=>{
+    const n = cfRubrosElegidos().size;
+    btn.disabled = !n;
+    btn.textContent = n ? (n===document.querySelectorAll('input.cf-rubro:not(:disabled)').length ? 'Aplicar todo' : `Aplicar ${n} rubro${n>1?'s':''}`) : 'Elegí al menos un rubro';
+  };
+  document.querySelectorAll('input.cf-rubro').forEach(x=> x.addEventListener('change', upd));
+  document.getElementById('cfSelAll').addEventListener('click', ()=>{ document.querySelectorAll('input.cf-rubro:not(:disabled)').forEach(x=>x.checked=true); upd(); });
+  document.getElementById('cfSelNone').addEventListener('click', ()=>{ document.querySelectorAll('input.cf-rubro').forEach(x=>x.checked=false); upd(); });
+  upd();
+}
+
 async function confirmCFImport(){
+  const sel = cfRubrosElegidos();
+  if(!sel.size) return;
   const {parsed, arcaParsed, planesParsed, creditosParsed, sueldosParsed, desvincParsed, otrasParsed, deudaExtParsed, filename, file, hojas} = cfImportCtx;
   const monthKeys = parsed.monthKeys;
   const importId = newImportId(), nowIso = new Date().toISOString();
@@ -1908,43 +1961,45 @@ async function confirmCFImport(){
       };
       const vals = (parsed.results[entity][year]||{})[month] || {};
       ['caja_bancos','valores_cartera','cheques_emitidos'].forEach(f=>{
-        if(vals[f]===undefined) return;
+        if(!sel.has(f) || vals[f]===undefined) return;
         setF(f, vals[f]);
       });
       // Moneda Extranjera queda en USD dentro de meta; el valor en $ se calcula solo con el Tipo de Cambio
-      delete d.values.moneda_extranjera;
-      d.meta.moneda_extranjera = {source:'archivo', importId, usd: vals.moneda_extranjera, override:false, filename, updatedAt: nowIso};
-      applied.push({e:entity, y:year, m:month, f:'moneda_extranjera', v:vals.moneda_extranjera||0, u:'USD'});
+      if(sel.has('moneda_extranjera')){
+        delete d.values.moneda_extranjera;
+        d.meta.moneda_extranjera = {source:'archivo', importId, usd: vals.moneda_extranjera, override:false, filename, updatedAt: nowIso};
+        applied.push({e:entity, y:year, m:month, f:'moneda_extranjera', v:vals.moneda_extranjera||0, u:'USD'});
+      }
 
-      if(arcaParsed && year===arcaParsed.lastMonth.year && month===arcaParsed.lastMonth.month){
+      if(sel.has('oblig_impositivas') && arcaParsed && year===arcaParsed.lastMonth.year && month===arcaParsed.lastMonth.month){
         const items = arcaParsed.items[entity];
         setF('oblig_impositivas', sumT(items), {items});
       }
-      if(planesParsed){
+      if(sel.has('deudas_fiscales') && planesParsed){
         const b = planesParsed.results[entity][year][month];
         setF('deudas_fiscales_cte', sumT(b.cte), {items:b.cte});
         setF('deudas_fiscales_nocte', sumT(b.nocte), {items:b.nocte});
       }
-      if(creditosParsed){
+      if(sel.has('deudas_bancarias') && creditosParsed){
         const b = creditosParsed.results[entity][year][month];
         setF('deudas_bancarias_cte', sumT(b.cte), {items:b.cte});
         setF('deudas_bancarias_nocte', sumT(b.nocte), {items:b.nocte});
       }
-      if(sueldosParsed){
+      if(sel.has('sueldos') && sueldosParsed){
         const items = sueldosParsed.results[entity][year][month];
         setF('sueldos', sumT(items), {items});
       }
-      if(desvincParsed){
+      if(sel.has('desvinculaciones') && desvincParsed){
         const b = desvincParsed.results[entity][year][month];
         setF('desvinculaciones_cte', sumT(b.cte), {items:b.cte});
         setF('desvinculaciones_nocte', sumT(b.nocte), {items:b.nocte});
       }
-      if(otrasParsed){
+      if(sel.has('otras_deudas') && otrasParsed){
         const b = otrasParsed.results[entity][year][month];
         setF('otras_deudas_cte', sumT(b.cte), {items:b.cte});
         setF('otras_deudas_nocte', sumT(b.nocte), {items:b.nocte});
       }
-      if(deudaExtParsed){
+      if(sel.has('proveedores_ext') && deudaExtParsed){
         const items = deudaExtParsed.results[entity][year][month];
         setF('proveedores_ext', sumT(items), {items});
       }
@@ -1958,7 +2013,7 @@ async function confirmCFImport(){
   }
   await registerImport({
     id:importId, tipo:'cashflow', archivo: filename, size: file ? file.size : 0, fecha: nowIso, usuario:USUARIO.nombre,
-    entidades:['spl','spotsline'], aplicado: applied, saltados: skippedFrozen, extra:{hojas}
+    entidades:['spl','spotsline'], aplicado: applied, saltados: skippedFrozen, extra:{hojas, rubros:[...sel]}
   }, file);
 }
 
