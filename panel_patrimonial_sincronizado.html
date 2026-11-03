@@ -88,14 +88,29 @@ table.grid tr.total-row.grand td{background:var(--bg4);font-size:13px}
 table.grid tr.ratio-row td{color:var(--yellow)}
 table.grid td.numcell.frozen-cell{background:rgba(245,196,0,.06)}
 .month-hd{display:flex;align-items:center;justify-content:flex-end;gap:5px}
+/* Encabezado de meses estilo EERR: grande, en blanco, con estado debajo y borde amarillo */
+table.grid thead th.mes-hd{background:#141414;border-bottom:2px solid var(--yellow);box-shadow:none;vertical-align:bottom;padding-top:12px;padding-bottom:9px;font-family:var(--sans);text-transform:none;letter-spacing:0}
+table.grid thead th.rubro-hd.ent-hd{background:#141414;border-bottom:2px solid var(--yellow);box-shadow:none;vertical-align:bottom;font-family:var(--sans);text-transform:none;letter-spacing:0;padding-bottom:9px}
+.ent-hd .ent-n{font-size:17px;font-weight:800;color:var(--yellow)}
+.ent-hd .ent-y{font-size:13px;font-weight:600;color:var(--text2);margin-left:6px}
+.mes-hd .mh{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.mes-hd .mh-n{font-size:15px;font-weight:700;color:var(--text);text-transform:capitalize;display:flex;align-items:center;gap:6px}
+.mes-hd .mh-e{font-size:11px;font-weight:500;color:var(--text3);display:flex;align-items:center;gap:4px}
+.mes-hd .mh-e.abierto{color:var(--green)}
+.mes-hd .freeze-btn{font-size:13px}
 .freeze-btn{background:none;border:none;cursor:pointer;font-size:11px;opacity:.55;padding:0;line-height:1}
 .freeze-btn:hover{opacity:1}
 .freeze-btn.is-frozen{opacity:.9}
+@media print{table.grid thead th.mes-hd,table.grid thead th.ent-hd{background:#fff!important;border-bottom:1px solid #000!important}.mes-hd .mh-n{color:#000!important;font-size:11px}.mes-hd .mh-e,.ent-hd .ent-y{display:none}.ent-hd .ent-n{color:#000!important;font-size:12px}}
 .del-item-btn{background:none;border:none;cursor:pointer;font-size:12px;opacity:.6}
 .del-item-btn:hover{opacity:1}
 .unlock-btn{background:none;border:none;cursor:pointer;font-size:11px;margin-right:3px;opacity:.5;vertical-align:middle}
 .unlock-btn:hover{opacity:1;color:var(--yellow)}
 table.grid td.numcell{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+table.grid td.numcell.man-cell{position:relative;box-shadow:inset 0 -2px 0 var(--yellow)}
+table.grid td.numcell.man-cell::before{content:'';position:absolute;top:0;right:0;border-style:solid;border-width:0 8px 8px 0;border-color:transparent var(--yellow) transparent transparent}
+.man-cell .man-ic{color:var(--yellow);font-size:10px;margin-right:3px}
+@media print{table.grid td.numcell.man-cell::before{display:none}}
 table.grid input.val-input{width:88px;background:var(--bg3);border:1px solid var(--border2);border-radius:5px;color:var(--text);font-family:var(--mono);font-size:12px;text-align:right;padding:4px 6px}
 table.grid input.val-input:focus{outline:none;border-color:var(--yellow)}
 table.grid input.val-input:disabled{background:transparent;border-color:transparent;color:var(--text2)}
@@ -331,7 +346,7 @@ tr.rate-row .rubro-cell{font-style:italic;color:var(--text2);font-size:12px}
     </div>
   </div>
   <div class="legend no-print">
-    <span><span class="badge manual">Manual</span> cargado a mano</span>
+    <span><span class="badge manual">Manual</span> cargado a mano · <b style="color:var(--yellow)">◥</b> celda modificada a mano: pasá el mouse para ver quién, cuándo y la observación</span>
     <span><span class="badge archivo">Archivo</span> desde un reporte subido</span>
     <span><span class="badge cashflow">Cash Flow</span> calculado del cash flow, a confirmar</span>
     <span><span class="badge fijo">Activo Fijo</span> tomado de tu planilla, a confirmar</span>
@@ -658,7 +673,7 @@ function diffPeriodo(antes, despues){
     const va = numOrNull(a[f]), vd = numOrNull(d[f]);
     if(va===vd || (va!==null && vd!==null && Math.abs(va-vd)<0.005)) return;
     const meta = (despues.meta||{})[f] || {};
-    const origen = meta.source==='archivo' ? ('Archivo: '+(meta.filename||'')) : meta.source==='panel' ? 'Sincronizar Paneles' : 'Manual';
+    const origen = meta.source==='archivo' ? ('Archivo: '+(meta.filename||'')) : meta.source==='panel' ? 'Sincronizar Paneles' : ('Manual' + (meta.obs ? ' — ' + meta.obs : ''));
     out.push({c:f, a:va, d:vd, o:origen});
   });
   if(!!(antes&&antes.frozen) !== !!despues.frozen) out.push({c:'__frozen', a:antes&&antes.frozen?'Sí':'No', d:despues.frozen?'Sí':'No', o:despues.frozen?'Congeló':'Descongeló'});
@@ -780,7 +795,7 @@ function renderYearNav(){
 /* ============ DATA: effective values (stored, falling back to seed) per month ============ */
 async function effectiveMonthData(entity, year, month){
   const stored = await loadPeriod(entity, year, month);
-  const values = {}, sources = {};
+  const values = {}, sources = {}, usdPend = {}, manual = {};
   const usdFieldIds = Object.keys(USD_FIELDS);
   ALL_FIELDS.forEach(f=>{
     if(usdFieldIds.includes(f.id)) return; // se calculan aparte (USD x Tipo de Cambio)
@@ -788,6 +803,7 @@ async function effectiveMonthData(entity, year, month){
     if(raw !== undefined && raw !== '' && raw !== null){
       values[f.id] = Number(raw);
       sources[f.id] = (stored.meta[f.id] && stored.meta[f.id].source) ? stored.meta[f.id].source : (f.tag==='panel'?'panel':'manual');
+      if(sources[f.id]==='manual') manual[f.id] = stored.meta[f.id] || {};
     } else {
       const seed = getSeed(entity, year, month, f.id);
       if(seed !== undefined){ values[f.id] = seed; sources[f.id] = seedBadgeFor(f.id, year); }
@@ -798,7 +814,7 @@ async function effectiveMonthData(entity, year, month){
   // Tipo de Cambio Oficial (BNA): manual > referencia histórica > sin dato
   const rawRate = stored.values.tipo_cambio;
   if(rawRate !== undefined && rawRate !== '' && rawRate !== null){
-    values.tipo_cambio = Number(rawRate); sources.tipo_cambio = 'manual';
+    values.tipo_cambio = Number(rawRate); sources.tipo_cambio = 'manual'; manual.tipo_cambio = stored.meta.tipo_cambio || {};
   } else {
     const seedRate = getSeedDolar(year, month);
     if(seedRate !== undefined){ values.tipo_cambio = seedRate; sources.tipo_cambio = 'referencia'; }
@@ -814,11 +830,13 @@ async function effectiveMonthData(entity, year, month){
     const usd = (usdMeta !== undefined && usdMeta !== null) ? usdMeta : getSeedUsdFor(fid, entity, month);
     if(!override && usd !== undefined){
       if(values.tipo_cambio){ values[fid] = usd * values.tipo_cambio; sources[fid] = 'convertido'; }
-      else { values[fid] = usd; sources[fid] = 'usd'; }
+      // Sin Tipo de Cambio: NO se suma al total (antes entraban los dólares como si fueran pesos).
+      // El monto en USD se guarda aparte (usdPend) solo para mostrarlo en naranja.
+      else { values[fid] = 0; usdPend[fid] = usd; sources[fid] = 'usd'; }
     } else {
       const raw = stored.values[fid];
       if(raw !== undefined && raw !== '' && raw !== null){
-        values[fid] = Number(raw); sources[fid] = 'manual';
+        values[fid] = Number(raw); sources[fid] = 'manual'; manual[fid] = stored.meta[fid] || {};
       } else {
         const hist = getSeedHistorical(entity, year, month, fid);
         if(hist !== undefined){ values[fid] = hist; sources[fid] = 'historico'; }
@@ -827,7 +845,7 @@ async function effectiveMonthData(entity, year, month){
     }
   });
 
-  return {values, sources, meta: stored.meta, frozen: !!stored.frozen, comentario: stored.comentario||''};
+  return {values, sources, usdPend, manual, meta: stored.meta, frozen: !!stored.frozen, comentario: stored.comentario||''};
 }
 
 async function effectiveMonthDataConjunto(year, month){
@@ -989,11 +1007,15 @@ async function renderGrid(monthsOverride){
   // Resumen automático: compara cada mes contra el anterior (aunque no esté visible) y arma los cambios relevantes.
   const summaryTexts = await computeSummaryTexts(visibleMonths, monthData, totalsByMonth, esConj);
 
-  const headRow = `<tr><th class="rubro-hd"><span style="color:var(--yellow)">${entLabel}</span> · ${state.year}</th>${visibleMonths.map(m=>{
-    if(esConj) return `<th>${MESES[m].slice(0,3)}</th>`;
+  const headRow = `<tr><th class="rubro-hd ent-hd"><span class="ent-n">${entLabel}</span><span class="ent-y">${state.year}</span></th>${visibleMonths.map(m=>{
+    const nom = MESES[m].toLowerCase();
+    if(esConj) return `<th class="mes-hd"><div class="mh"><span class="mh-n">${nom}</span><span class="mh-e">SPL + Spotsline</span></div></th>`;
     const frozen = monthData[m].frozen;
-    if(!PERM.congelar) return `<th><div class="month-hd"><span>${MESES[m].slice(0,3)}</span>${frozen?'<span title="Mes congelado">🔒</span>':''}</div></th>`;
-    return `<th><div class="month-hd"><span>${MESES[m].slice(0,3)}</span><button class="freeze-btn ${frozen?'is-frozen':''}" data-freeze-month="${m}" title="${frozen?'Mes congelado — click para descongelar':'Congelar este mes'}">${frozen?'🔒':'🔓'}</button></div></th>`;
+    const est = `<span class="mh-e ${frozen?'':'abierto'}">${frozen?'Congelado':'Abierto'}</span>`;
+    const lock = !PERM.congelar
+      ? (frozen?'<span title="Mes congelado">🔒</span>':'')
+      : `<button class="freeze-btn ${frozen?'is-frozen':''}" data-freeze-month="${m}" title="${frozen?'Mes congelado — click para descongelar':'Congelar este mes'}">${frozen?'🔒':'🔓'}</button>`;
+    return `<th class="mes-hd"><div class="mh"><span class="mh-n">${nom}${lock}</span>${est}</div></th>`;
   }).join('')}</tr>`;
 
   function fieldRow(f){
@@ -1010,13 +1032,17 @@ async function renderGrid(monthsOverride){
       const drillBtn = drillItems ? `<button class="drill-btn" data-drill="${f.id}" data-month="${m}" title="Ver detalle">🔎</button>` : '';
       const unlockBtn = (lockedCalc && !frozen && !readonly) ? `<button class="unlock-btn" data-unlock="${f.id}" data-month="${m}" title="Editar manualmente (deja de calcularse con USD × TC)">✎</button>` : '';
       const isOverride = (USD_FIELDS[f.id] && src==='manual' && !frozen);
+      const manInfo = (!esConj && monthData[m].manual) ? monthData[m].manual[f.id] : undefined;
+      const manAttr = manInfo ? ` man-cell" data-calc="${escAttr(tipManual(manInfo, fmtMoney))}` : '';
       const relockBtn = isOverride ? `<button class="unlock-btn" data-relock="${f.id}" data-month="${m}" title="Volver a calcular con USD × Tipo de Cambio">↺</button>` : '';
       if(readonly || lockedCalc || frozen){
         const color = warn ? 'var(--orange)' : (seeded ? 'var(--blue)' : '');
-        const title = lockedCalc?'Calculado: USD × Tipo de Cambio. Click en ✎ para editar a mano.':(frozen?'Mes congelado':'');
-        cells += `<td class="numcell ${frozen?'frozen-cell':''}">${drillBtn}${unlockBtn}<span style="${color?`color:${color}`:''}" title="${title}">${v?fmtMoney(v):'—'}</span></td>`;
+        const usdP = warn && monthData[m].usdPend ? monthData[m].usdPend[f.id] : undefined;
+        const title = warn ? 'Falta el Tipo de Cambio de este mes: no se suma al total hasta cargarlo.' : (lockedCalc?'Calculado: USD × Tipo de Cambio. Click en ✎ para editar a mano.':(frozen?'Mes congelado':''));
+        const shown = (usdP!==undefined) ? ('US$ '+Math.round(usdP).toLocaleString('es-AR')) : (v?fmtMoney(v):'—');
+        cells += `<td class="numcell ${frozen?'frozen-cell':''}${manAttr}">${drillBtn}${unlockBtn}<span style="${color?`color:${color}`:''}" title="${title}">${shown}</span></td>`;
       } else {
-        cells += `<td class="numcell">${drillBtn}${relockBtn}<input class="val-input ${seeded?'seeded':''} ${warn?'warn':''}" type="text" inputmode="decimal" data-field="${f.id}" data-month="${m}" value="${fmtInput(v)}" placeholder="0" title="${warn?'Sin cotización para convertir a pesos':''}"></td>`;
+        cells += `<td class="numcell${manAttr}">${drillBtn}${relockBtn}<input class="val-input ${seeded?'seeded':''} ${warn?'warn':''}" type="text" inputmode="decimal" data-field="${f.id}" data-month="${m}" value="${fmtInput(v)}" placeholder="0" title="${warn?'Sin cotización para convertir a pesos':''}"></td>`;
       }
     }
     return `<tr class="rubro-row">${rubroLabelCell(f, esConj || !PERM.importar, sourceTag, esConj)}${cells}</tr>`;
@@ -1070,10 +1096,12 @@ async function renderGrid(monthsOverride){
       const v = monthData[m].values.tipo_cambio;
       const src = monthData[m].sources.tipo_cambio;
       const frozen = !esConj && monthData[m].frozen;
+      const manInfoTc = (!esConj && monthData[m].manual) ? monthData[m].manual.tipo_cambio : undefined;
+      const manAttrTc = manInfoTc ? ` man-cell" data-calc="${escAttr(tipManual(manInfoTc, x=>Number(x).toLocaleString('es-AR')))}` : '';
       if(readonly || frozen){
-        cells += `<td class="numcell ${frozen?'frozen-cell':''}"><span title="${frozen?'Mes congelado':''}">${v?v.toLocaleString('es-AR'):'—'}</span></td>`;
+        cells += `<td class="numcell ${frozen?'frozen-cell':''}${manAttrTc}"><span title="${frozen?'Mes congelado':''}">${v?v.toLocaleString('es-AR'):'—'}</span></td>`;
       } else {
-        cells += `<td class="numcell"><input class="val-input ${src==='referencia'?'seeded':''}" type="number" step="any" data-field="tipo_cambio" data-month="${m}" value="${v||''}" placeholder="0"></td>`;
+        cells += `<td class="numcell${manAttrTc}"><input class="val-input ${src==='referencia'?'seeded':''}" type="number" step="any" data-field="tipo_cambio" data-month="${m}" value="${v||''}" placeholder="0"></td>`;
       }
     }
     const badge = esConj ? '' : tagBadge(monthData[firstM].sources.tipo_cambio || 'referencia');
@@ -1164,8 +1192,34 @@ async function renderGrid(monthsOverride){
     document.querySelectorAll('input[data-field]').forEach(inp=>{
       inp.addEventListener('change', async ()=>{
         const m = Number(inp.dataset.month);
+        const fid = inp.dataset.field;
+        const esTC = fid==='tipo_cambio';
+        const nuevo = esTC ? (inp.value==='' ? '' : Number(inp.value)) : parseInput(inp.value);
+        const md = lastMonthData && lastMonthData[m];
+        const antes = md ? md.values[fid] : undefined;
+        if((nuevo===''&&!antes) || (nuevo!=='' && antes!==undefined && Math.abs(Number(nuevo)-Number(antes))<0.005)){ renderGrid(); return; }
+        const fmtV = v => (v===''||v===undefined||v===null) ? '—' : (esTC ? Number(v).toLocaleString('es-AR') : fmtMoney(v));
+        const rubro = esTC ? 'Tipo de Cambio' : ((ALL_FIELDS.find(x=>x.id===fid)||{}).label || fid);
+        const previa = md && md.manual && md.manual[fid] ? md.manual[fid].obs : '';
+        const obs = await pedirObservacion(rubro, fmtV(antes), fmtV(nuevo), '');
+        if(obs===null){ renderGrid(); return; } // cancelado: vuelve al valor anterior
+        const metaManual = prev => Object.assign({}, prev && prev.override ? {override:true} : {}, prev && prev.usd!==undefined ? {usd:prev.usd} : {},
+          {source:'manual', obs, por:USUARIO.nombre, updatedAt:new Date().toISOString(), anterior:(antes===undefined?null:antes)});
+        if(esTC){
+          // El Tipo de Cambio es el mismo para SPL y Spotsline: se guarda en las dos (salvo meses congelados).
+          for(const ent of ['spl','spotsline']){
+            const dd = await loadPeriod(ent, state.year, m);
+            if(dd.frozen && ent!==state.entity) continue;
+            dd.values.tipo_cambio = nuevo;
+            dd.meta.tipo_cambio = metaManual(dd.meta.tipo_cambio);
+            await savePeriod(ent, state.year, m, dd);
+          }
+          renderGrid();
+          return;
+        }
         const d = await loadPeriod(state.entity, state.year, m);
-        d.values[inp.dataset.field] = inp.type==='number' ? (inp.value===''?'':Number(inp.value)) : parseInput(inp.value);
+        d.values[fid] = nuevo;
+        d.meta[fid] = metaManual(d.meta[fid]); // deja de figurar como Archivo/Cash Flow: ahora es Manual
         await savePeriod(state.entity, state.year, m, d);
         renderGrid();
       });
@@ -1235,6 +1289,43 @@ async function renderAll(){
 /* ============ FILE UPLOAD MODAL ============ */
 const RUTA_STOCK_ODOO = 'En Odoo, elegí la empresa (SPL o Spotsline) → <b>Inventario</b> → <b>Reportes</b> → <b>Existencias</b> → seleccioná todo → <b>Exportar</b>. Después aplicá el filtro <b>Situación patrimonial</b> y exportá de nuevo: ese Excel es el que se sube acá, uno por empresa.';
 let uploadCtx = null;
+
+/* ============ CAMBIOS MANUALES: observación obligatoria a la vista ============ */
+// Arma el globo que aparece al pasar el mouse por una celda modificada a mano.
+function tipManual(info, fmt){
+  info = info || {};
+  let h = `<div class="calc-tip-h">✎ Modificado a mano</div>`;
+  if(info.por || info.updatedAt) h += `<p>${info.por?'Por <b>'+escHtml(info.por)+'</b>':''}${info.updatedAt?' · '+fmtFechaHora(info.updatedAt):''}</p>`;
+  if(info.anterior!==undefined && info.anterior!==null && info.anterior!=='') h += `<p>Valor anterior: <b>${fmt(info.anterior)}</b></p>`;
+  h += `<div class="ct-s">Observación</div><p>${info.obs ? escHtml(info.obs).replace(/\n/g,'<br>') : '<i>Sin observación (se cargó antes de que existiera este registro).</i>'}</p>`;
+  return h;
+}
+// Pide la observación del cambio. Devuelve el texto, o null si se canceló (el cambio no se guarda).
+function pedirObservacion(rubro, antes, despues, previa){
+  return new Promise(resolve=>{
+    const modal = document.getElementById('modal');
+    modal.innerHTML = `
+      <span class="close-x" id="obsX">&times;</span>
+      <h3>Modificación manual — ${escHtml(rubro)}</h3>
+      <div class="desc">Antes: <b>${antes}</b> → Ahora: <b>${despues}</b><br>Contá por qué se cambia: queda guardado en la celda (se ve al pasar el mouse) y en el Registro de cambios.</div>
+      <textarea id="obsTxt" rows="4" style="width:100%;box-sizing:border-box;background:var(--bg3);color:var(--text);border:1px solid var(--border2);border-radius:6px;padding:8px;font-family:var(--sans);font-size:13px" placeholder="Ej.: ajuste según extracto bancario del 30/09">${escHtml(previa||'')}</textarea>
+      <div id="obsErr" class="desc" style="color:var(--red);display:none">Escribí una observación para guardar el cambio.</div>
+      <div class="modal-actions">
+        <button class="btn" id="obsCancel">Cancelar (no guardar)</button>
+        <button class="btn primary" id="obsOk">Guardar cambio</button>
+      </div>`;
+    document.getElementById('overlay').classList.add('show');
+    const txt = document.getElementById('obsTxt'); setTimeout(()=>txt.focus(), 30);
+    const fin = v=>{ closeModal(); resolve(v); };
+    document.getElementById('obsX').addEventListener('click', ()=>fin(null));
+    document.getElementById('obsCancel').addEventListener('click', ()=>fin(null));
+    document.getElementById('obsOk').addEventListener('click', ()=>{
+      const v = txt.value.trim();
+      if(!v){ document.getElementById('obsErr').style.display='block'; txt.focus(); return; }
+      fin(v);
+    });
+  });
+}
 
 function closeModal(){ document.getElementById('overlay').classList.remove('show'); document.getElementById('modal').style.width=''; uploadCtx = null; }
 
@@ -1404,7 +1495,7 @@ function infoRubro(f){
     + (fuente ? `<div class="ct-s">De dónde sale</div><p>${fuente}</p>` : '')
     + `<div class="ct-s">Cómo se analiza</div><p>${i[1]}</p>`;
 }
-const INFO_TC = `<div class="calc-tip-h">Tipo de Cambio Oficial (BNA)</div><p>Cotización del dólar que se usa para pasar a pesos Moneda Extranjera y Dólares Comex.</p><div class="ct-s">Cómo se analiza</div><p>Se carga uno por mes (o con "TC oficial de hoy"). Si falta, esos rubros quedan en dólares y en naranja, y los totales salen mal.</p>`;
+const INFO_TC = `<div class="calc-tip-h">Tipo de Cambio Oficial (BNA)</div><p>Cotización del dólar que se usa para pasar a pesos Moneda Extranjera y Dólares Comex.</p><div class="ct-s">Cómo se analiza</div><p>Se carga uno por mes (o con "TC oficial de hoy"). Si falta, esos rubros se muestran en US$ y en naranja y <b>no se suman</b> a los totales hasta cargarlo. Al cargarlo a mano se aplica a SPL y Spotsline juntas.</p>`;
 // Totales y ratios: qué es, fórmula con los números del mes y cómo leerlo.
 const fM = v => fmtMoney(v), fX = v => fmtRatio(v), fP = v => isFinite(v) ? (v*100).toFixed(1)+'%' : '—';
 const cRow = (a,b,cls) => `<div class="calc-row${cls?' '+cls:''}"><span>${a}</span><span>${b}</span></div>`;
@@ -1490,6 +1581,7 @@ const METODOLOGIA = [
     ['Filtro Todo / Corriente / No corriente', 'Arriba, al lado de la empresa. "Corriente" deja solo Activo y Pasivo Corriente, Capital de Trabajo, Liquidez, Prueba Ácida y % Pasivo Corriente. "No corriente" deja Activo y Pasivo No Corriente y % Pasivo No Corriente. En las dos se ocultan Total Activo, Total Pasivo, Patrimonio Neto, Endeudamiento, Solvencia y Cobertura, porque mezclan los dos plazos. Los números no cambian: solo se ocultan filas. El Excel y el PDF siguen saliendo completos.'],
     ['Usuarios y permisos', 'Se entra con el usuario del Panel de Paneles. Qué empresas ve cada uno y qué puede hacer (cargar a mano, importar, congelar, notas, exportar, backup, ver el registro) se define en la portada: Usuarios → Permisos dentro de Situación Patrimonial. Los administradores generales hacen todo.'],
     ['Registro de cambios', 'Botón "Registro de cambios": lista cada valor que cambió, con usuario, fecha, empresa, mes, rubro, valor anterior, valor nuevo y origen (manual, archivo, paneles, backup, congelar). Se puede filtrar y bajar a Excel.'],
+    ['Cambios manuales', 'Al cambiar a mano cualquier valor (también el Tipo de Cambio) se pide una observación: sin observación no se guarda, y Cancelar vuelve al valor anterior. La celda queda marcada con un triángulo amarillo ◥ y el rubro pasa a figurar como Manual (aunque antes viniera de un archivo o del Cash Flow). Pasá el mouse por la celda (o tocala en el celular) para ver quién la cambió, cuándo, el valor anterior y la observación. La observación también figura en el Registro de cambios (columna Origen). Si se vuelve a importar el archivo, el valor importado reemplaza al manual.'],
     ['Íconos ⓘ', 'Pasá el mouse por el nombre de un rubro, total o ratio (o tocá la ⓘ en el celular) para ver qué es, de dónde sale y cómo se analiza. Sobre el número de un total o ratio, el globo muestra la cuenta con los valores de ese mes.'],
     ['Plegar secciones', 'Tocá el título de una sección (Activo Corriente, Pasivo No Corriente, etc.) para ocultar sus rubros y dejar solo el total, igual que los bloques del Estado de resultados. Volvé a tocarlo para abrirla. El filtro y las secciones plegadas se recuerdan en tu navegador.']
   ]},
@@ -1500,7 +1592,7 @@ const METODOLOGIA = [
     ['Producto terminado', 'Archivo: En Odoo, elegí la empresa (SPL o Spotsline) → <b>Inventario</b> → <b>Reportes</b> → <b>Existencias</b> → seleccioná todo → <b>Exportar</b>. Después aplicá el filtro <b>Situación patrimonial</b> y exportá de nuevo: ese Excel es el que se sube acá, uno por empresa. Se sube el reporte de stock del sistema (Variante de producto) por empresa. Para SPL se suma todo lo categorizado "Producto Terminado SPL", más Componente/Insumo SPL, Accesorios SPL e insumos de embalaje (SPL es distribuidora: compra y revende, todo el stock es producto terminado). Para Spotsline se suma "Producto Terminado / ..." (fabrica productos propios).'],
     ['Materia prima', 'Mismo reporte de stock (misma ruta de Odoo: Inventario → Reportes → Existencias, filtro Situación patrimonial). Solo aplica a Spotsline (fabricante): suma Materia prima + Componente/Insumo + Parte/Pieza. No aplica a SPL por ser distribuidora.'],
     ['Dólares Comex', 'Monto en dólares confirmado a mano (foto set-2026). Se convierte a pesos multiplicando por el Tipo de Cambio del mes, igual que Moneda Extranjera.'],
-    ['Moneda Extranjera', 'Se importa desde la hoja "Caja y Bancos" del Cash Flow (fila "Moneda Extranjera"), en dólares. Se convierte a pesos multiplicando por el Tipo de Cambio Oficial (BNA) del mes, que es una fila editable aparte — si no hay cotización cargada para ese mes, el valor queda en dólares sin convertir (marcado en naranja) hasta que cargues el tipo de cambio.']
+    ['Moneda Extranjera', 'Se importa desde la hoja "Caja y Bancos" del Cash Flow (fila "Moneda Extranjera"), en dólares. Se convierte a pesos multiplicando por el Tipo de Cambio Oficial (BNA) del mes, que es una fila editable aparte — si no hay cotización cargada para ese mes, el valor se muestra en US$ (en naranja) y no se suma a los totales hasta que cargues el tipo de cambio. El Tipo de Cambio que cargues a mano se guarda para SPL y Spotsline a la vez (es el mismo para las dos).']
   ]},
   {group:'Activo No Corriente', items:[
     ['Inmuebles / Maquinarias / Rodados', 'Valores fijos por empresa, confirmados a mano (2026): Spotsline tiene Inmuebles, Maquinarias y Rodados propios; SPL solo tiene Maquinaria ($1.343.838) y no tiene Inmuebles ni Rodados. Se actualiza raramente.']
@@ -1803,7 +1895,7 @@ async function confirmCFImport(){
       });
       // Moneda Extranjera queda en USD dentro de meta; el valor en $ se calcula solo con el Tipo de Cambio
       delete d.values.moneda_extranjera;
-      d.meta.moneda_extranjera = {source:'archivo', importId, usd: vals.moneda_extranjera, filename, updatedAt: nowIso};
+      d.meta.moneda_extranjera = {source:'archivo', importId, usd: vals.moneda_extranjera, override:false, filename, updatedAt: nowIso};
       applied.push({e:entity, y:year, m:month, f:'moneda_extranjera', v:vals.moneda_extranjera||0, u:'USD'});
 
       if(arcaParsed && year===arcaParsed.lastMonth.year && month===arcaParsed.lastMonth.month){
